@@ -7,7 +7,7 @@ Gradle引用方法
 
     dependencies {
        //HttpSender
-       implementation 'com.http.wrapper:httpsender:1.1.5'
+       implementation 'com.http.wrapper:httpsender:1.1.6'
        //RxLife 管理RxJava生命周期
        implementation 'com.rxjava.rxlife:rxlife:1.0.4'
        //注解处理器
