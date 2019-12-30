@@ -5,4 +5,7 @@ include ':app',
         'rxhttp-converter:converter-jackson',
         'rxhttp-converter:converter-protobuf',
         'rxhttp-converter:converter-fastjson',
+        'rxhttp-converter:converter-gson',
+        'rxhttp-converter:converter-moshi',
+        'rxhttp-converter:converter-wire',
         'rxhttp-converter:converter-simplexml'
