@@ -11,7 +11,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import rxhttp.wrapper.param.RxHttp;
-import rxhttp.wrapper.param.RxHttp$FormParam;
+import rxhttp.wrapper.param.RxHttp_FormParam;
 import rxhttp.wrapper.parse.SimpleParser;
 
 /**
@@ -39,7 +39,7 @@ public class TokenInterceptor implements Interceptor {
 
     //处理token失效问题
     private Response handleTokenInvalid(Chain chain, Request request) throws IOException {
-        RxHttp$FormParam rxHttp = RxHttp.postForm(request.url().toString());  //2、根据自己的业务修改
+        RxHttp_FormParam rxHttp = RxHttp.postForm(request.url().toString());  //2、根据自己的业务修改
         RequestBody body = request.body();
         if (body instanceof FormBody) {
             FormBody formBody = (FormBody) body;
@@ -75,7 +75,7 @@ public class TokenInterceptor implements Interceptor {
             try {
                 //获取到最新的token，这里需要同步请求token,千万不能异步  5、根据自己的业务修改
                 String token = RxHttp.postForm("/refreshToken/...")
-                    .execute(SimpleParser.get(String.class));
+                    .execute(new SimpleParser<>(String.class));
 
                 SESSION_KEY_REFRESH_TIME = System.currentTimeMillis() / 1000;
                 User.get().setToken(token); //保存最新的token

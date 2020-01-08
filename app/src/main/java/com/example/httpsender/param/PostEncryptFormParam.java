@@ -22,9 +22,9 @@ public class PostEncryptFormParam extends FormParam {
         return this;
     }
 
-    public PostEncryptFormParam test1(String s) {
-        return this;
-    }
+//    public PostEncryptFormParam test1(String s) {
+//        return this;
+//    }
 
     //此方法会在
     public PostEncryptFormParam test2(long a, float b) {
