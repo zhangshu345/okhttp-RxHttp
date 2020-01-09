@@ -4,13 +4,9 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import rxhttp.wrapper.annotation.Param
 import java.io.IOException
-import java.lang.Deprecated
 import java.util.*
 import javax.annotation.processing.Filer
-import javax.lang.model.element.ElementKind
-import javax.lang.model.element.ExecutableElement
-import javax.lang.model.element.Modifier
-import javax.lang.model.element.TypeElement
+import javax.lang.model.element.*
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Long
@@ -22,7 +18,7 @@ class ParamsAnnotatedClass {
     fun add(typeElement: TypeElement) {
         val annotation = typeElement.getAnnotation(Param::class.java)
         val name: String = annotation.methodName
-        require(name.length != 0) {
+        require(name.isNotEmpty()) {
             String.format("methodName() in @%s for class %s is null or empty! that's not allowed",
                 Param::class.java.simpleName, typeElement.qualifiedName.toString())
         }
@@ -71,42 +67,42 @@ class ParamsAnnotatedClass {
         for ((key, typeElement) in mElementMap) {
             val param = ClassName.bestGuess(typeElement.qualifiedName.toString())
             val rxHttpName = "RxHttp_" + typeElement.simpleName
-            val `RxHttp_ParamName` = ClassName(RxHttpGenerator.packageName, rxHttpName)
+            val rxhttpParamName = ClassName(RxHttpGenerator.packageName, rxHttpName)
             method = FunSpec.builder(key)
                 .addModifiers(KModifier.PUBLIC)
                 .addAnnotation(JvmStatic::class)
                 .addParameter("url", String::class)
                 .addParameter("formatArgs", Any::class, KModifier.VARARG)
-                .addStatement("return  \n    %T(%T(format(url, formatArgs)))", `RxHttp_ParamName`, param)
+                .addStatement("return  \n    %T(%T(format(url, formatArgs)))", rxhttpParamName, param)
 //                .returns(RxHttp_ParamName)
             companionMethodList.add(method.build())
             val superclass = typeElement.superclass
-            var `RxHttp_Param`: TypeName
+            var rxhttpParam: TypeName
             var prefix = "(param as " + param.simpleName + ")."
             when (superclass.toString()) {
-                "rxhttp.wrapper.param.FormParam" -> `RxHttp_Param` = ClassName(RxHttpGenerator.packageName, "RxHttp_FormParam")
-                "rxhttp.wrapper.param.JsonParam" -> `RxHttp_Param` = ClassName(RxHttpGenerator.packageName, "RxHttp_JsonParam")
-                "rxhttp.wrapper.param.NoBodyParam" -> `RxHttp_Param` = ClassName(RxHttpGenerator.packageName, "RxHttp_NoBodyParam")
+                "rxhttp.wrapper.param.FormParam" -> rxhttpParam = ClassName(RxHttpGenerator.packageName, "RxHttp_FormParam")
+                "rxhttp.wrapper.param.JsonParam" -> rxhttpParam = ClassName(RxHttpGenerator.packageName, "RxHttp_JsonParam")
+                "rxhttp.wrapper.param.NoBodyParam" -> rxhttpParam = ClassName(RxHttpGenerator.packageName, "RxHttp_NoBodyParam")
                 else -> {
                     prefix = "param."
-                    `RxHttp_Param` = RxHttpGenerator.RXHTTP.parameterizedBy(param, `RxHttp_ParamName`)
+                    rxhttpParam = RxHttpGenerator.RXHTTP.parameterizedBy(param, rxhttpParamName)
                 }
             }
-            val `RxHttp_PostEncryptFormParamMethod`: MutableList<FunSpec> = ArrayList()
+            val rxHttpPostEncryptFormParamMethod = ArrayList<FunSpec>()
             method = FunSpec.constructorBuilder()
                 .addModifiers(KModifier.PUBLIC)
                 .addParameter("param", param)
                 .callSuperConstructor("param")
-            `RxHttp_PostEncryptFormParamMethod`.add(method.build())
+            rxHttpPostEncryptFormParamMethod.add(method.build())
             for (enclosedElement in typeElement.enclosedElements) {
                 if (enclosedElement !is ExecutableElement) continue
                 if (!enclosedElement.getModifiers().contains(Modifier.PUBLIC)) continue  //过滤非public修饰符
                 if (enclosedElement.getKind() != ElementKind.METHOD) continue  //过滤非方法，
                 if (enclosedElement.getAnnotation(Override::class.java) != null) continue  //过滤重写的方法
                 val returnTypeMirror = enclosedElement.returnType
-                var returnType: TypeName = returnTypeMirror.asTypeName()
+                var returnType = returnTypeMirror.asTypeName()
                 if (returnType.toString() == param.toString()) {
-                    returnType = `RxHttp_ParamName`
+                    returnType = rxhttpParamName
                 }
                 val parameterSpecs: MutableList<ParameterSpec> = ArrayList()
                 val builder = StringBuilder()
@@ -126,7 +122,7 @@ class ParamsAnnotatedClass {
                      //TODO  set<Modifier> sets = enclosedElement.getModifiers()
                     .addModifiers(KModifier.PUBLIC)
                     .addParameters(ParameterSpec.parametersOf(enclosedElement))
-                if (returnType === RxHttp_ParamName) {
+                if (returnType === rxhttpParamName) {
                     method.addStatement(prefix + builder, param)
                         .addStatement("return this")
                 } else if (returnType.toString() == "void") {
@@ -135,15 +131,15 @@ class ParamsAnnotatedClass {
                     method.addStatement("return $prefix$builder", param)
                 }
                 method.returns(returnType)
-                `RxHttp_PostEncryptFormParamMethod`.add(method.build())
+                rxHttpPostEncryptFormParamMethod.add(method.build())
             }
             val rxHttpPostEncryptFormParamSpec = TypeSpec.classBuilder(rxHttpName)
                 .addKdoc("Github" +
                     "\nhttps://github.com/liujingxing/RxHttp" +
                     "\nhttps://github.com/liujingxing/RxLife\n")
                 .addModifiers(KModifier.PUBLIC, KModifier.OPEN)
-                .superclass(`RxHttp_Param`)
-                .addFunctions(`RxHttp_PostEncryptFormParamMethod`)
+                .superclass(rxhttpParam)
+                .addFunctions(rxHttpPostEncryptFormParamMethod)
                 .build()
             FileSpec.builder(RxHttpGenerator.packageName, rxHttpName)
                 .addType(rxHttpPostEncryptFormParamSpec)
@@ -154,28 +150,24 @@ class ParamsAnnotatedClass {
             .addAnnotation(JvmStatic::class)
             .addParameter("noBodyParam", noBodyParamName)
             .addStatement("return %L(noBodyParam)", "RxHttp_NoBodyParam")
-//            .returns(ClassName(RxHttpGenerator.packageName, "RxHttp_NoBodyParam"))
         companionMethodList.add(method.build())
         method = FunSpec.builder("with")
             .addModifiers(KModifier.PUBLIC)
             .addAnnotation(JvmStatic::class)
             .addParameter("formParam", formParamName)
             .addStatement("return %L(formParam)", "RxHttp_FormParam")
-//            .returns(ClassName(RxHttpGenerator.packageName, "RxHttp_FormParam"))
         companionMethodList.add(method.build())
         method = FunSpec.builder("with")
             .addModifiers(KModifier.PUBLIC)
             .addAnnotation(JvmStatic::class)
             .addParameter("jsonParam", jsonParamName)
             .addStatement("return %L(jsonParam)", "RxHttp_JsonParam")
-//            .returns(ClassName(RxHttpGenerator.packageName, "RxHttp_JsonParam"))
         companionMethodList.add(method.build())
         method = FunSpec.builder("with")
             .addModifiers(KModifier.PUBLIC)
             .addAnnotation(JvmStatic::class)
             .addParameter("jsonArrayParam", jsonArrayParamName)
             .addStatement("return %L(jsonArrayParam)", "RxHttp_JsonArrayParam")
-//            .returns(ClassName(RxHttpGenerator.packageName, "RxHttp_JsonArrayParam"))
         companionMethodList.add(method.build())
         method = FunSpec.builder("setUrl")
             .addModifiers(KModifier.PUBLIC)
