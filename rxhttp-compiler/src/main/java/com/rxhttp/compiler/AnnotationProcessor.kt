@@ -148,7 +148,7 @@ class AnnotationProcessor : AbstractProcessor() {
         All@ while (true) {
             val interfaces = currentClass.interfaces
             for (typeMirror in interfaces) {
-                if (typeMirror.toString() != "rxhttp.wrapper.parse.Parser<T>") continue
+                if (!typeMirror.toString().contains("rxhttp.wrapper.parse.Parser")) continue
                 break@All
             }
             val superClassType = currentClass.superclass

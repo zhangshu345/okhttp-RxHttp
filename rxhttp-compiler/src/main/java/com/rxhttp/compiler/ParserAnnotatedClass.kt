@@ -8,6 +8,7 @@ import java.util.*
 import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
+import javax.lang.model.element.TypeParameterElement
 import javax.lang.model.type.TypeMirror
 
 class ParserAnnotatedClass {
@@ -205,11 +206,54 @@ class ParserAnnotatedClass {
                 }
             }
             if (returnType == null) continue
+            val typeVariableNames: MutableList<TypeVariableName> = ArrayList()
+            val parameterSpecs: MutableList<ParameterSpec> = ArrayList()
+            val typeParameters: List<TypeParameterElement> = typeElement.getTypeParameters()
+            for (element in typeParameters) {
+
+                val typeVariableName = element.asTypeVariableName()
+                typeVariableNames.add(typeVariableName)
+                val parameterSpec: ParameterSpec = ParameterSpec.builder(
+                    element.asType().toString().toLowerCase() + "Type",
+                    Class::class.asClassName().parameterizedBy(typeVariableName)).build()
+                parameterSpecs.add(parameterSpec)
+            }
+
+            //自定义解析器对应的asXxx方法里面的语句
+            //自定义解析器对应的asXxx方法里面的语句
+            val statementBuilder = StringBuilder("return asParser(%T")
+            if (typeVariableNames.size > 0) { //添加泛型
+                statementBuilder.append("<")
+                var i = 0
+                val size = typeVariableNames.size
+                while (i < size) {
+                    val variableName = typeVariableNames[i]
+                    statementBuilder.append(variableName.name)
+                        .append(if (i == size - 1) ">" else ",")
+                    i++
+                }
+            }
+
+            statementBuilder.append("(")
+            if (parameterSpecs.size > 0) { //添加参数
+                var i = 0
+                val size = parameterSpecs.size
+                while (i < size) {
+                    val parameterSpec = parameterSpecs[i]
+                    statementBuilder.append(parameterSpec.name)
+                    if (i < size - 1) statementBuilder.append(",")
+                    i++
+                }
+            }
+            statementBuilder.append("))")
             method = FunSpec.builder("as$key")
                 .addModifiers(KModifier.PUBLIC)
-                .addTypeVariable(t)
-                .addParameter("type", classTName)
-                .addStatement("return asParser(%T(type))", typeElement.asClassName())
+                .addParameters(parameterSpecs)
+                .addStatement(statementBuilder.toString(), typeElement.asClassName())
+
+            typeVariableNames.forEach {
+                method.addTypeVariable(it.toKClassTypeName() as TypeVariableName)
+            }
             methodList.add(method.build())
         }
         method = FunSpec.builder("asDownload")
