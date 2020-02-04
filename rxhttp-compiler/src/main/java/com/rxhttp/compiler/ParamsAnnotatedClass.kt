@@ -6,12 +6,13 @@ import rxhttp.wrapper.annotation.Param
 import java.io.IOException
 import java.util.*
 import javax.annotation.processing.Filer
-import javax.lang.model.element.*
-import kotlin.Any
+import javax.lang.model.element.ElementKind
+import javax.lang.model.element.ExecutableElement
+import javax.lang.model.element.Modifier
+import javax.lang.model.element.TypeElement
 import kotlin.Boolean
 import kotlin.Long
 import kotlin.String
-import kotlin.require
 
 class ParamsAnnotatedClass {
     private val mElementMap: MutableMap<String, TypeElement>
@@ -108,9 +109,8 @@ class ParamsAnnotatedClass {
                 val builder = StringBuilder()
                     .append(enclosedElement.getSimpleName().toString())
                     .append("(")
-                val parameters = enclosedElement.parameters
-                for (element in parameters) {
-                    val parameterSpec = ParameterSpec.get(element)
+                enclosedElement.parameters.forEach {
+                    val parameterSpec = ParameterSpec.get(it)
                     parameterSpecs.add(parameterSpec)
                     builder.append(parameterSpec.name).append(",")
                 }
@@ -118,10 +118,16 @@ class ParamsAnnotatedClass {
                     builder.deleteCharAt(builder.length - 1)
                 }
                 builder.append(")")
-                method = FunSpec.builder(enclosedElement.getSimpleName().toString())
-                     //TODO  set<Modifier> sets = enclosedElement.getModifiers()
-                    .addModifiers(KModifier.PUBLIC)
-                    .addParameters(ParameterSpec.parametersOf(enclosedElement))
+
+                if (enclosedElement.isVarArgs) { //处理可变参数
+                    if (enclosedElement.parameters.size == 1) {
+                        builder.insert(builder.indexOf("(") + 1, "*")
+                    } else if (enclosedElement.parameters.size > 1) {
+                        val indexOf = builder.lastIndexOf(",")
+                        builder.insert(indexOf + 1, "*")
+                    }
+                }
+                method = enclosedElement.toFunSpecBuilder()
                 if (returnType === rxhttpParamName) {
                     method.addStatement(prefix + builder, param)
                         .addStatement("return this")
