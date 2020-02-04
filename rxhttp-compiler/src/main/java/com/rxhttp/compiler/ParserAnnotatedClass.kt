@@ -39,6 +39,11 @@ class ParserAnnotatedClass {
         val listParserName = ClassName("rxhttp.wrapper.parse", "ListParser")
         val downloadParserName = ClassName("rxhttp.wrapper.parse", "DownloadParser")
         val bitmapParserName = ClassName("rxhttp.wrapper.parse", "BitmapParser")
+        val okResponseName = ClassName("okhttp3", "Response")
+        val headersName = ClassName("okhttp3", "Headers")
+        val okResponseParserName = ClassName("rxhttp.wrapper.parse", "OkResponseParser")
+        val observableOkResponseName = observableName.parameterizedBy(okResponseName)
+        val observableHeadersName = observableName.parameterizedBy(headersName)
         val typeName = String::class.asTypeName()
         val classTName = Class::class.asClassName().parameterizedBy(t)
         val classKName = Class::class.asClassName().parameterizedBy(k)
@@ -193,6 +198,22 @@ class ParserAnnotatedClass {
             .addParameter("type", classTName)
             .addStatement("return asParser(%T(type))", listParserName)
         methodList.add(method.build())
+
+        method = FunSpec.builder("asHeaders")
+            .addKdoc("调用此方法，订阅回调时，返回 {@link okhttp3.Headers} 对象\n")
+            .addModifiers(KModifier.PUBLIC)
+            .addStatement("return asOkResponse().map(Response::headers)")
+            .returns(observableHeadersName)
+        methodList.add(method.build())
+
+        method = FunSpec.builder("asOkResponse")
+            .addKdoc("调用此方法，订阅回调时，返回 {@link okhttp3.Response} 对象\n")
+            .addModifiers(KModifier.PUBLIC)
+            .addStatement("return asParser(%T())", okResponseParserName)
+            .returns(observableOkResponseName)
+        methodList.add(method.build())
+
+        //获取自定义解析器，并生成对应的方法
         for ((key, typeElement) in mElementMap) {
             var returnType: TypeMirror? = null //获取onParse方法的返回类型
             for (element in typeElement.enclosedElements) {
