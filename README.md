@@ -26,17 +26,18 @@
 
 ```java
 dependencies {
-   implementation 'com.rxjava.rxhttp:rxhttp:1.4.0'
-   annotationProcessor 'com.rxjava.rxhttp:rxhttp-compiler:1.4.0' //注解处理器，生成RxHttp类
+
+   implementation 'com.rxjava.rxhttp:rxhttp:1.4.2' //必须
+   annotationProcessor 'com.rxjava.rxhttp:rxhttp-compiler:1.4.2' //注解处理器，生成RxHttp类,必须
+   implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'  //切换主线程，Android工程必须
 
    implementation 'com.rxjava.rxlife:rxlife:1.1.0'  //页面销毁，关闭请求，非必须
-   implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'  //切换主线程，非必须
 
    //Converter 根据自己需求选择  非必须  RxHttp默认内置了GsonConverter
-   implementation 'com.rxjava.rxhttp:converter-jackson:1.4.0'
-   implementation 'com.rxjava.rxhttp:converter-fastjson:1.4.0'
-   implementation 'com.rxjava.rxhttp:converter-protobuf:1.4.0'
-   implementation 'com.rxjava.rxhttp:converter-simplexml:1.4.0'
+   implementation 'com.rxjava.rxhttp:converter-jackson:1.4.2'
+   implementation 'com.rxjava.rxhttp:converter-fastjson:1.4.2'
+   implementation 'com.rxjava.rxhttp:converter-protobuf:1.4.2'
+   implementation 'com.rxjava.rxhttp:converter-simplexml:1.4.2'
 }
 ```
 `注：kotlin用户，请使用kapt替代annotationProcessor`
@@ -64,6 +65,10 @@ compileOptions {
 wiki详细文档：https://github.com/liujingxing/okhttp-RxHttp/wiki  (此文档会持续更新)
 
 自动关闭请求用到的RxLife类，详情请查看[RxLife库](https://github.com/liujingxing/RxLife)
+
+[更新日志](https://github.com/liujingxing/okhttp-RxHttp/wiki/%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97) &nbsp;&nbsp;&nbsp;&nbsp;
+[已知问题](https://github.com/liujingxing/okhttp-RxHttp/wiki/%E5%B7%B2%E7%9F%A5%E9%97%AE%E9%A2%98) &nbsp;&nbsp;&nbsp;&nbsp;
+[Java工程依赖注意事项](https://github.com/liujingxing/okhttp-RxHttp/wiki/Java%E5%B7%A5%E7%A8%8B%E4%BE%9D%E8%B5%96)
 
 ## API兼容
 
