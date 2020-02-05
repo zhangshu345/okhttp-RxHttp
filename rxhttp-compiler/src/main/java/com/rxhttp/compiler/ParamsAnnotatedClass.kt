@@ -263,7 +263,7 @@ class ParamsAnnotatedClass {
         methodList.add(
             FunSpec.builder("setAssemblyEnabled")
                 .addKdoc("设置单个接口是否需要添加公共参数," +
-                    "\n即是否回调通过{@link #setOnParamAssembly(Function)}方法设置的接口,默认为true\n")
+                    "\n即是否回调通过 [setOnParamAssembly] 方法设置的接口,默认为true\n")
                 .addParameter("enabled", Boolean::class)
                 .addStatement("param.setAssemblyEnabled(enabled)")
                 .addStatement("return this as R")
@@ -272,14 +272,14 @@ class ParamsAnnotatedClass {
 
         val annoDeprecated = AnnotationSpec.builder(kotlin.Deprecated::class)
             .addMember(
-                "\n\"please user {@link #setDecoderEnabled(boolean)} instead\""
+                "\n\"please user [setDecoderEnabled] instead\""
                     + "\n,ReplaceWith(\"setDecoderEnabled(enabled)\", \"RxHttp.setDecoderEnabled\")")
             .build()
 
         methodList.add(
             FunSpec.builder("setConverterEnabled")
                 .addAnnotation(annoDeprecated)
-                .addKdoc("@deprecated please user {@link #setDecoderEnabled(boolean)} instead\n")
+                .addKdoc("@deprecated please user [setDecoderEnabled] instead\n")
                 .addParameter("enabled", Boolean::class)
                 .addStatement("return setDecoderEnabled(enabled)")
                 .returns(rxHttp)
@@ -287,7 +287,7 @@ class ParamsAnnotatedClass {
         methodList.add(
             FunSpec.builder("setDecoderEnabled")
                 .addKdoc("设置单个接口是否需要对Http返回的数据进行解码/解密," +
-                    "\n即是否回调通过{@link #setResultDecoder(Function)}方法设置的接口,默认为true\n")
+                    "\n即是否回调通过 [setResultDecoder] 方法设置的接口,默认为true\n")
                 .addParameter("enabled", Boolean::class)
                 .addStatement("param.addHeader(%T.DATA_DECRYPT,enabled.toString())", paramName)
                 .addStatement("return this as R")

@@ -119,7 +119,7 @@ class RxHttpGenerator {
 
         val annoDeprecated = AnnotationSpec.builder(Deprecated::class)
             .addMember(
-                "\n\"please user {@link #setResultDecoder(Function)} instead\"," +
+                "\n\"please user [setResultDecoder] instead\"," +
                     "\n    ReplaceWith(\"setResultDecoder(decoder)\", \"RxHttp.setResultDecoder\")")
             .build()
 
@@ -127,7 +127,7 @@ class RxHttpGenerator {
             FunSpec.builder("setOnConverter")
                 .addAnnotation(JvmStatic::class)
                 .addAnnotation(annoDeprecated)
-                .addKdoc("@deprecated please user {@link #setResultDecoder(Function)} instead\n")
+                .addKdoc("@deprecated please user [setResultDecoder] instead\n")
                 .addParameter("decoder", mapStringName)
                 .addStatement("setResultDecoder(decoder)")
                 .build())
@@ -137,7 +137,7 @@ class RxHttpGenerator {
                 .addAnnotation(JvmStatic::class)
                 .addKdoc("设置统一数据解码/解密器，每次请求成功后会回调该接口并传入Http请求的结果" +
                     "\n通过该接口，可以统一对数据解密，并将解密后的数据返回即可" +
-                    "\n若部分接口不需要回调该接口，发请求前，调用{@link #setDecoderEnabled(boolean)}方法设置false即可\n")
+                    "\n若部分接口不需要回调该接口，发请求前，调用 [setDecoderEnabled] 方法设置false即可\n")
                 .addParameter("decoder", mapStringName)
                 .addStatement("%T.setResultDecoder(decoder)", rxHttpPluginsName)
                 .build())
@@ -154,7 +154,7 @@ class RxHttpGenerator {
             FunSpec.builder("setOnParamAssembly")
                 .addAnnotation(JvmStatic::class)
                 .addKdoc("设置统一公共参数回调接口,通过该接口,可添加公共参数/请求头，每次请求前会回调该接口" +
-                    "\n若部分接口不需要添加公共参数,发请求前，调用{@link #setAssemblyEnabled(boolean)}方法设置false即可\n")
+                    "\n若部分接口不需要添加公共参数,发请求前，调用 [setAssemblyEnabled]方法设置false即可\n")
                 .addParameter("onParamAssembly", mapKVName)
                 .addStatement("%T.setOnParamAssembly(onParamAssembly)", rxHttpPluginsName)
                 .build())
@@ -625,7 +625,7 @@ class RxHttpGenerator {
         methodList.add(
             FunSpec.builder("addAll")
                 .addKdoc("将Json对象里面的key-value逐一取出，添加到另一个Json对象中，" +
-                    "\n输入非Json对象将抛出{@link IllegalStateException}异常\n")
+                    "\n输入非Json对象将抛出 [IllegalStateException] 异常\n")
                 .addParameter("jsonObject", String::class)
                 .addStatement("param.addAll(jsonObject)")
                 .addStatement("return this")

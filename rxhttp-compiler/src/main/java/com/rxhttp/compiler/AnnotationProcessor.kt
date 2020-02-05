@@ -53,7 +53,8 @@ class AnnotationProcessor : AbstractProcessor() {
         return SourceVersion.latestSupported()
     }
 
-    override fun process(annotations: Set<TypeElement>, roundEnv: RoundEnvironment): Boolean { //        messager.printMessage(Kind.WARNING, "process start annotations" + annotations + " this=" + this);
+    override fun process(annotations: Set<TypeElement>, roundEnv: RoundEnvironment): Boolean {
+//        messager.printMessage(Kind.WARNING, "process start annotations" + annotations + " this=" + this);
         if (annotations.isEmpty() || processed) return true
         try {
             val rxHttpGenerator = RxHttpGenerator()

@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
     //发送Get请求，获取文章列表
     fun sendGet(view: View) {
         get("/article/list/0/json")
-            .asResponsePageList(Article::class.java)
+            .asResponsePageList(Article::class)
             .lifeOnMain(this) //感知生命周期，并在主线程回调
             .subscribe({
                 mBinding.tvResult.text = Gson().toJson(it)
@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 
         postForm("/article/query/0/json")
             .add("k", null)
-            .asResponsePageList(Article::class.java)
+            .asResponsePageList(Article::class)
             .lifeOnMain(this) //感知生命周期，并在主线程回调
             .subscribe({
                 mBinding.tvResult.text = Gson().toJson(it)
@@ -156,7 +156,7 @@ class MainActivity : AppCompatActivity() {
             .addJsonElement("{\"name\":\"王五\"}")
             .addAll(names)
             .asString()
-            .`as`(RxLife.asOnMain(this))
+            .lifeOnMain(this)
             .subscribe({
                 mBinding.tvResult.text = it
             }, {
@@ -171,7 +171,7 @@ class MainActivity : AppCompatActivity() {
     fun xmlConverter(view: View) {
         get("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=sf-muni")
             .setXmlConverter()
-            .asObject(NewsDataXml::class.java)
+            .asObject(NewsDataXml::class)
             .lifeOnMain(this) //感知生命周期，并在主线程回调
             .subscribe({
                 mBinding.tvResult.text = Gson().toJson(it)
@@ -187,7 +187,7 @@ class MainActivity : AppCompatActivity() {
     fun fastJsonConverter(view: View) {
         get("/article/list/0/json")
             .setFastJsonConverter()
-            .asResponsePageList(Article::class.java)
+            .asResponsePageList(Article::class)
             .lifeOnMain(this) //感知生命周期，并在主线程回调
             .subscribe({
                 mBinding.tvResult.text = Gson().toJson(it)
