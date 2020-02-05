@@ -160,24 +160,6 @@ class AnnotationProcessor : AbstractProcessor() {
             }
             currentClass = typeUtils!!.asElement(superClassType) as TypeElement
         }
-        //        for (Element enclosedElement : element.getEnclosedElements()) {
-//            if (!(enclosedElement instanceof ExecutableElement)) continue;
-//            if (!enclosedElement.getModifiers().contains(KModifier.PUBLIC)
-//                    || !enclosedElement.getModifiers().contains(KModifier.COMPANION)) continue;
-//            if (!enclosedElement.toString().equals("<T>get(java.lang.Class<T>)")) continue;
-//            ExecutableElement executableElement = (ExecutableElement) enclosedElement;
-//            TypeMirror returnType = executableElement.getReturnType();
-//            if (!typeUtils.asElement(returnType).toString()
-//                    .equals(element.getQualifiedName().toString())) continue;
-//            if (returnType instanceof DeclaredType) {
-//                DeclaredType declaredType = (DeclaredType) returnType;
-//                if (declaredType.getTypeArguments().size() == 1) return;
-//            }
-//        }
-// No empty constructor found
-//        throw  ProcessingException(element,
-//                "The class %s must provide an public static <T> %s get(Class<T> t) mehod",
-//                element.getQualifiedName().toString(), element.getQualifiedName().toString() + "<T>");
     }
 
     @Throws(ProcessingException::class)
