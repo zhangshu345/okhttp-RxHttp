@@ -25,7 +25,7 @@ import rxhttp.wrapper.param.Param;
  */
 public class RxHttpPlugins {
 
-    private static Function<? super Param, ? extends Param> mOnParamAssembly;
+    private static Function<? super Param<?>, ? extends Param<?>> mOnParamAssembly;
     private static Function<? super String, String> decoder;
     private static IConverter converter = GsonConverter.create();
 
@@ -35,7 +35,7 @@ public class RxHttpPlugins {
     private static CacheStrategy cacheStrategy = new CacheStrategy(CacheMode.ONLY_NETWORK);
 
     //设置公共参数装饰
-    public static void setOnParamAssembly(@Nullable Function<? super Param, ? extends Param> onParamAssembly) {
+    public static void setOnParamAssembly(@Nullable Function<? super Param<?>, ? extends Param<?>> onParamAssembly) {
         mOnParamAssembly = onParamAssembly;
     }
 
@@ -72,9 +72,10 @@ public class RxHttpPlugins {
      * @param source Param
      * @return 装饰后的参数
      */
-    public static Param onParamAssembly(Param source) {
+    @NonNull
+    public static Param<?> onParamAssembly(Param<?> source) {
         if (source == null || !source.isAssemblyEnabled()) return source;
-        Function<? super Param, ? extends Param> f = mOnParamAssembly;
+        Function<? super Param<?>, ? extends Param<?>> f = mOnParamAssembly;
         if (f != null) {
             return apply(f, source);
         }

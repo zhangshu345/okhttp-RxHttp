@@ -44,13 +44,8 @@ object HttpSender {
     }
 
     @JvmStatic
-    fun init(okHttpClient: OkHttpClient, debug: Boolean) {
+    fun init(okHttpClient: OkHttpClient, debug: Boolean = false) {
         setDebug(debug)
-        init(okHttpClient)
-    }
-
-    @JvmStatic
-    fun init(okHttpClient: OkHttpClient) {
         require(mOkHttpClient == null) { "OkHttpClient can only be initialized once" }
         mOkHttpClient = okHttpClient
     }
@@ -92,7 +87,7 @@ object HttpSender {
      * @param <T>    要转换的目标数据类型
      * @return T
      * @throws IOException 数据解析异常、网络异常等
-    </T> */
+     */
     @JvmStatic
     @Throws(IOException::class)
     fun <T> execute(param: Param<*>, parser: Parser<T>): T {
@@ -100,15 +95,15 @@ object HttpSender {
     }
 
     /**
-     * <P>同步发送一个请求
-    </P> *
+     * 同步发送一个请求
+     *
      * 支持任意请求方式，如：Get、Head、Post、Put等
      *
      * @param param  请求参数
      * @param parser 数据解析器
      * @param <T>    要转换的目标数据类型
      * @return Observable
-    </T> */
+     */
     @JvmStatic
     fun <T> syncFrom(param: Param<*>, parser: Parser<T>): Observable<T> {
         return ObservableHttp(param, parser)
@@ -124,7 +119,7 @@ object HttpSender {
      * @return Observable
      */
     @JvmStatic
-    fun downloadProgress(param: Param<*>, destPath: String?, offsetSize: Long, scheduler: Scheduler?): Observable<Progress<String>> {
+    fun downloadProgress(param: Param<*>, destPath: String, offsetSize: Long, scheduler: Scheduler?): Observable<Progress<String>> {
         val observableDownload = ObservableDownload(param, destPath, offsetSize)
         return if (scheduler != null) observableDownload.subscribeOn(scheduler) else observableDownload
     }
@@ -154,19 +149,19 @@ object HttpSender {
     //所有的请求，最终都会调此方法拿到Call对象，然后执行请求
     @JvmStatic
     @Throws(IOException::class)
-    fun newCall(client: OkHttpClient?, param: Param<*>): Call {
+    fun newCall(client: OkHttpClient, param: Param<*>): Call {
         val request = newRequest(param)
-        return client!!.newCall(request)
+        return client.newCall(request)
     }
 
     @JvmStatic
     @Throws(IOException::class)
     fun newRequest(param: Param<*>): Request {
-        val param = RxHttpPlugins.onParamAssembly(param)
-        if (param is IUploadLengthLimit) {
-            param.checkLength()
+        val onParamAssembly = RxHttpPlugins.onParamAssembly(param)
+        if (onParamAssembly is IUploadLengthLimit) {
+            onParamAssembly.checkLength()
         }
-        val request = param.buildRequest()
+        val request = onParamAssembly.buildRequest()
         LogUtil.log(request)
         return request
     }
