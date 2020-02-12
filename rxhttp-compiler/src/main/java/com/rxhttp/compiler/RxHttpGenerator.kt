@@ -58,6 +58,8 @@ class RxHttpGenerator {
         val listName = mutableListName.parameterizedBy(subObject)
         val listObjectName = mutableListName.parameterizedBy(objectName)
         val t = TypeVariableName("T")
+        val anyTypeName = Any::class.asTypeName()
+        val anyT = TypeVariableName("T", anyTypeName)
         val progressName = ClassName("rxhttp.wrapper.entity", "Progress")
         val progressTName = progressName.parameterizedBy(t)
         val progressStringName = progressName.parameterizedBy(stringName)
@@ -557,7 +559,7 @@ class RxHttpGenerator {
 
         methodList.add(
             FunSpec.builder("asUpload")
-                .addTypeVariable(t)
+                .addTypeVariable(anyT)
                 .addParameter(parser)
                 .addParameter("progressConsumer", consumerProgressTName)
                 .addParameter(observeOnScheduler)

@@ -14,7 +14,7 @@ import java.io.IOException
  * Time: 13:49
  */
 //@Parser(name = "Response")
-class ResponseParser<T> : AbstractParser<T> {
+class ResponseParser<T : Any> : AbstractParser<T> {
 
     protected constructor() : super()
 

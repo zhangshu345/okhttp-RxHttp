@@ -90,7 +90,7 @@ object HttpSender {
      */
     @JvmStatic
     @Throws(IOException::class)
-    fun <T> execute(param: Param<*>, parser: Parser<T>): T {
+    fun <T : Any> execute(param: Param<*>, parser: Parser<T>): T {
         return parser.onParse(execute(param))
     }
 
@@ -105,7 +105,7 @@ object HttpSender {
      * @return Observable
      */
     @JvmStatic
-    fun <T> syncFrom(param: Param<*>, parser: Parser<T>): Observable<T> {
+    fun <T : Any> syncFrom(param: Param<*>, parser: Parser<T>): Observable<T> {
         return ObservableHttp(param, parser)
     }
 
@@ -135,7 +135,7 @@ object HttpSender {
      * @return Observable
     </T> */
     @JvmStatic
-    fun <T> uploadProgress(param: Param<*>, parser: Parser<T>, scheduler: Scheduler?): Observable<Progress<T>> {
+    fun <T : Any> uploadProgress(param: Param<*>, parser: Parser<T>, scheduler: Scheduler?): Observable<Progress<T>> {
         val observableUpload = ObservableUpload(param, parser)
         return if (scheduler != null) observableUpload.subscribeOn(scheduler) else observableUpload
     }

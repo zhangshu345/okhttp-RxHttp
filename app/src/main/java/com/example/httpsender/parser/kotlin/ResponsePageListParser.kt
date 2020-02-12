@@ -15,7 +15,7 @@ import java.io.IOException
  * Time: 13:49
  */
 //@Parser(name = "ResponsePageList")
-class ResponsePageListParser<T> : AbstractParser<PageList<T>> {
+class ResponsePageListParser<T : Any> : AbstractParser<PageList<T>> {
 
     protected constructor() : super()
 

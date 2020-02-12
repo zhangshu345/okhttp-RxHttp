@@ -72,7 +72,7 @@ class ParserAnnotatedClass {
                 .build())
         funList.add(
             FunSpec.builder("execute")
-                .addTypeVariable(t)
+                .addTypeVariable(anyT)
                 .addAnnotation(AnnotationSpec.builder(Throws::class)
                     .addMember("%T::class", IOException::class).build())
                 .addParameter("parser", parserTName)
@@ -192,7 +192,7 @@ class ParserAnnotatedClass {
 
         funList.add(
             FunSpec.builder("asObject")
-                .addTypeVariable(t)
+                .addTypeVariable(anyT)
                 .addParameter("type", classTName)
                 .addStatement("return asParser(%T(type))", simpleParserName)
                 .build())
@@ -203,7 +203,7 @@ class ParserAnnotatedClass {
 
         funList.add(
             FunSpec.builder("asMap")
-                .addTypeVariable(t)
+                .addTypeVariable(anyT)
                 .addParameter("type", classTName)
                 .addStatement("return asParser(%T(type,type))", mapParserName)
                 .build())
@@ -217,8 +217,8 @@ class ParserAnnotatedClass {
 
         funList.add(
             FunSpec.builder("asMap")
-                .addTypeVariable(k)
-                .addTypeVariable(v)
+                .addTypeVariable(anyK)
+                .addTypeVariable(anyV)
                 .addParameter("kType", classKName)
                 .addParameter("vType", classVName)
                 .addStatement("return asParser(%T(kType,vType))", mapParserName)
@@ -247,7 +247,7 @@ class ParserAnnotatedClass {
 
         funList.add(
             FunSpec.builder("asList")
-                .addTypeVariable(t)
+                .addTypeVariable(anyT)
                 .addParameter("type", classTName)
                 .addStatement("return asParser(%T(type))", listParserName)
                 .build())
@@ -266,7 +266,7 @@ class ParserAnnotatedClass {
 
         funList.add(
             FunSpec.builder("asParser")
-                .addTypeVariable(t)
+                .addTypeVariable(anyT)
                 .addParameter("parser", parserTName)
                 .addStatement("setConverter(param)")
                 .addStatement("var observable=%T.syncFrom(addDefaultDomainIfAbsent(param),parser)", httpSenderName)
@@ -465,8 +465,16 @@ class ParserAnnotatedClass {
             .addParameters(parameterSpecs)
             .addStatement(statementBuilder.toString(), typeElement.asClassName())
 
+//        typeVariableNames.forEach {
+//            funBuilder.addTypeVariable(TypeVariableName(it.name, anyTypeName))
+//        }
         typeVariableNames.forEach {
-            funBuilder.addTypeVariable(it.toKClassTypeName() as TypeVariableName)
+            if (it.bounds.isEmpty()
+                || (it.bounds.size == 1 && it.bounds[0].toString() == "java.lang.Object")) {
+                funBuilder.addTypeVariable(TypeVariableName(it.name, anyTypeName))
+            } else {
+                funBuilder.addTypeVariable(it.toKClassTypeName() as TypeVariableName)
+            }
         }
         funList.add(funBuilder.build())
     }
