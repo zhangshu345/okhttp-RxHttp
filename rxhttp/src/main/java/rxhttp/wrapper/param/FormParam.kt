@@ -139,10 +139,9 @@ open class FormParam(url: String, method: Method) :
         return this
     }
 
-    @Throws(IOException::class)
     override fun checkLength() {
         val totalFileLength = totalFileLength
-        if (totalFileLength > uploadMaxLength) throw IOException("The current total file length is " + totalFileLength + " byte, " +
+        if (totalFileLength > uploadMaxLength) throw IllegalArgumentException("The current total file length is " + totalFileLength + " byte, " +
             "this length cannot be greater than " + uploadMaxLength + " byte")
     }
 

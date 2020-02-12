@@ -141,21 +141,18 @@ object HttpSender {
     }
 
     @JvmStatic
-    @Throws(IOException::class)
     fun newCall(param: Param<*>): Call {
         return newCall(getOkHttpClient(), param)
     }
 
     //所有的请求，最终都会调此方法拿到Call对象，然后执行请求
     @JvmStatic
-    @Throws(IOException::class)
     fun newCall(client: OkHttpClient, param: Param<*>): Call {
         val request = newRequest(param)
         return client.newCall(request)
     }
 
     @JvmStatic
-    @Throws(IOException::class)
     fun newRequest(param: Param<*>): Request {
         val onParamAssembly = RxHttpPlugins.onParamAssembly(param)
         if (onParamAssembly is IUploadLengthLimit) {
@@ -167,7 +164,6 @@ object HttpSender {
     }
 
     @JvmStatic
-    @Throws(IOException::class)
     fun execute(request: Request): Call {
         return getOkHttpClient().newCall(request)
     }
