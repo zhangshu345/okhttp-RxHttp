@@ -15,7 +15,7 @@ import java.lang.reflect.Type
  * Date: 2018/10/23
  * Time: 13:49
  */
-interface Parser<T> {
+interface Parser<T : Any> {
     /**
      * 数据解析,Http请求成功后回调
      *

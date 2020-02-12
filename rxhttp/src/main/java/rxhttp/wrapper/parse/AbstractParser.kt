@@ -9,7 +9,7 @@ import java.lang.reflect.Type
  * Date: 2019/1/21
  * Time: 15:32
  */
-abstract class AbstractParser<T> : Parser<T> {
+abstract class AbstractParser<T : Any> : Parser<T> {
     @JvmField
     protected var mType: Type
 
