@@ -152,6 +152,12 @@ object HttpSender {
         return client.newCall(request)
     }
 
+
+    @JvmStatic
+    fun newCall(request: Request): Call {
+        return getOkHttpClient().newCall(request)
+    }
+
     @JvmStatic
     fun newRequest(param: Param<*>): Request {
         val onParamAssembly = RxHttpPlugins.onParamAssembly(param)
@@ -161,11 +167,6 @@ object HttpSender {
         val request = onParamAssembly.buildRequest()
         LogUtil.log(request)
         return request
-    }
-
-    @JvmStatic
-    fun execute(request: Request): Call {
-        return getOkHttpClient().newCall(request)
     }
 
     /**

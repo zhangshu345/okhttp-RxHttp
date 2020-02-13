@@ -97,7 +97,7 @@ public final class ObservableHttp<T> extends Observable<T> implements Callable<T
             if (cacheModeIs(CacheMode.ONLY_CACHE)) //仅读缓存模式下，缓存读取失败，直接抛出异常
                 throw new CacheReadFailedException("Cache read failed");
         }
-        Call call = mCall = HttpSender.execute(request);
+        Call call = mCall = HttpSender.newCall(request);
         Response networkResponse = null;
         try {
             networkResponse = call.execute();

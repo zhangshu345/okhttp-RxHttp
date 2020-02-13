@@ -11,13 +11,11 @@ import androidx.databinding.DataBindingUtil
 import com.example.httpsender.databinding.MainActivityBinding
 import com.example.httpsender.entity.*
 import com.google.gson.Gson
-import com.rxjava.rxlife.RxLife
 import com.rxjava.rxlife.life
 import com.rxjava.rxlife.lifeOnMain
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
 import rxhttp.wrapper.entity.Progress
-import rxhttp.wrapper.param.RxHttp
 import rxhttp.wrapper.param.RxHttp.Companion.get
 import rxhttp.wrapper.param.RxHttp.Companion.postForm
 import rxhttp.wrapper.param.RxHttp.Companion.postJson
@@ -50,17 +48,18 @@ class MainActivity : AppCompatActivity() {
 
     //发送Get请求，获取文章列表
     fun sendGet(view: View) {
-        get("/article/list/0/json")
-            .asResponsePageList(Article::class)
-            .lifeOnMain(this) //感知生命周期，并在主线程回调
-            .subscribe({
-                mBinding.tvResult.text = Gson().toJson(it)
-            }, {
+        AndroidScope(this)
+            .onError {
                 val error = ErrorInfo(it)
                 mBinding.tvResult.text = error.errorMsg
                 //失败回调
                 error.show("发送失败,请稍后再试!")
-            })
+            }.launch {
+                val pageList = get("/article/list/0/json")
+                    .awaitResponsePageList(Article::class)
+                mBinding.tvResult.text = Gson().toJson(pageList)
+            }
+
     }
 
     //发送Post表单请求,根据关键字查询文章
@@ -264,14 +263,14 @@ class MainActivity : AppCompatActivity() {
         get("/miaolive/Miaolive.apk")
             .setDomainToUpdateIfAbsent() //使用指定的域名
             .setRangeHeader(length) //设置开始下载位置，结束位置默认为文件末尾
-            .asDownload(destPath, length,Consumer { progress: Progress<String> ->
+            .asDownload(destPath, length, Consumer { progress: Progress<String> ->
                 //如果需要衔接上次的下载进度，则需要传入上次已下载的字节数length
                 //下载进度回调,0-100，仅在进度有更新时才会回调
                 val currentProgress = progress.progress //当前进度 0-100
                 val currentSize = progress.currentSize //当前已下载的字节大小
                 val totalSize = progress.totalSize //要下载的总字节大小
                 mBinding.tvResult.append("\n" + progress.toString())
-            }, AndroidSchedulers.mainThread() ) //指定回调(进度/成功/失败)线程,不指定,默认在请求所在线程回调
+            }, AndroidSchedulers.mainThread()) //指定回调(进度/成功/失败)线程,不指定,默认在请求所在线程回调
             .life(this) //加入感知生命周期的观察者
             .subscribe({
                 //下载成功

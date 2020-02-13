@@ -22,10 +22,12 @@ class ParserAnnotatedClass {
     private val anyK = TypeVariableName("K", anyTypeName)
     private val anyV = TypeVariableName("V", anyTypeName)
     private val responseName = ClassName("okhttp3", "Response")
+    private val callName = ClassName("okhttp3", "Call")
     private val schedulerName = ClassName("io.reactivex", "Scheduler")
     private val observableName = ClassName("io.reactivex", "Observable")
     private val consumerName = ClassName("io.reactivex.functions", "Consumer")
     private val httpSenderName = ClassName("rxhttp", "HttpSender")
+    private val awaitName = ClassName("rxhttp", "await")
     private val parserName = ClassName("rxhttp.wrapper.parse", "Parser")
     private val progressName = ClassName("rxhttp.wrapper.entity", "Progress")
     private val simpleParserName = ClassName("rxhttp.wrapper.parse", "SimpleParser")
@@ -62,24 +64,6 @@ class ParserAnnotatedClass {
     fun getMethodList(platform: String): List<FunSpec> {
 
         val funList = ArrayList<FunSpec>()
-        funList.add(
-            FunSpec.builder("execute")
-                .addAnnotation(AnnotationSpec.builder(Throws::class)
-                    .addMember("%T::class", IOException::class).build())
-                .addStatement("setConverter(param)")
-                .addStatement("return %T.execute(addDefaultDomainIfAbsent(param))", httpSenderName)
-                .returns(responseName)
-                .build())
-        funList.add(
-            FunSpec.builder("execute")
-                .addTypeVariable(anyT)
-                .addAnnotation(AnnotationSpec.builder(Throws::class)
-                    .addMember("%T::class", IOException::class).build())
-                .addParameter("parser", parserTName)
-                .addStatement("return parser.onParse(execute())", httpSenderName)
-                .returns(t)
-                .build())
-
         funList.add(
             FunSpec.builder("subscribeOn")
                 .addParameter("scheduler", schedulerName)
@@ -131,7 +115,190 @@ class ParserAnnotatedClass {
                 .returns(RxHttpGenerator.r)
                 .build())
 
+        funList.add(
+            FunSpec.builder("execute")
+                .addAnnotation(AnnotationSpec.builder(Throws::class)
+                    .addMember("%T::class", IOException::class).build())
+                .addStatement("return newCall().execute()")
+                .returns(responseName)
+                .build())
+        funList.add(
+            FunSpec.builder("execute")
+                .addTypeVariable(anyT)
+                .addAnnotation(AnnotationSpec.builder(Throws::class)
+                    .addMember("%T::class", IOException::class).build())
+                .addParameter("parser", parserTName)
+                .addStatement("return parser.onParse(execute())", httpSenderName)
+                .returns(t)
+                .build())
+
+        funList.add(
+            FunSpec.builder("newCall")
+                .addStatement("setConverter(param)")
+                .addStatement("return %T.newCall(addDefaultDomainIfAbsent(param))", httpSenderName)
+                .returns(callName)
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitBoolean")
+                .addModifiers(KModifier.SUSPEND)
+                .addStatement("return await(Boolean::class.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitByte")
+                .addModifiers(KModifier.SUSPEND)
+                .addStatement("return await(Byte::class.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitShort")
+                .addModifiers(KModifier.SUSPEND)
+                .addStatement("return await(Short::class.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitInt")
+                .addModifiers(KModifier.SUSPEND)
+                .addStatement("return await(Int::class.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitLong")
+                .addModifiers(KModifier.SUSPEND)
+                .addStatement("return await(Long::class.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitFloat")
+                .addModifiers(KModifier.SUSPEND)
+                .addStatement("return await(Float::class.java)")
+                .build())
+        funList.add(
+            FunSpec.builder("awaitDouble")
+                .addModifiers(KModifier.SUSPEND)
+                .addStatement("return await(Double::class.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitString")
+                .addModifiers(KModifier.SUSPEND)
+                .addStatement("return await(String::class.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("await")
+                .addModifiers(KModifier.SUSPEND)
+                .addStatement("return await(Any::class.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("await")
+                .addModifiers(KModifier.SUSPEND)
+                .addTypeVariable(anyT)
+                .addParameter("any", kClassTName)
+                .addStatement("return await(any.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("await")
+                .addModifiers(KModifier.SUSPEND)
+                .addTypeVariable(anyT)
+                .addParameter("any", classTName)
+                .addStatement("return await(SimpleParser(any))")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitList")
+                .addModifiers(KModifier.SUSPEND)
+                .addStatement("return awaitList(Any::class.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitList")
+                .addModifiers(KModifier.SUSPEND)
+                .addTypeVariable(anyT)
+                .addParameter("any", kClassTName)
+                .addStatement("return awaitList(any.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitList")
+                .addModifiers(KModifier.SUSPEND)
+                .addTypeVariable(anyT)
+                .addParameter("any", classTName)
+                .addStatement("return await(ListParser(any))")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitMap")
+                .addModifiers(KModifier.SUSPEND)
+                .addStatement("return awaitMap(Any::class.java,Any::class.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitMap")
+                .addModifiers(KModifier.SUSPEND)
+                .addTypeVariable(anyK)
+                .addParameter("kType", classKName)
+                .addStatement("return awaitMap(kType, kType)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitMap")
+                .addModifiers(KModifier.SUSPEND)
+                .addTypeVariable(anyK)
+                .addParameter("kType", kClassKName)
+                .addStatement("return awaitMap(kType.java,kType.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitMap")
+                .addModifiers(KModifier.SUSPEND)
+                .addTypeVariable(anyK)
+                .addTypeVariable(anyV)
+                .addParameter("kType", kClassKName)
+                .addParameter("vType", kClassVName)
+                .addStatement("return awaitMap(kType.java,vType.java)")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitMap")
+                .addModifiers(KModifier.SUSPEND)
+                .addTypeVariable(anyK)
+                .addTypeVariable(anyV)
+                .addParameter("kType", classKName)
+                .addParameter("vType", classVName)
+                .addStatement("return await(MapParser(kType,vType))")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitHeaders")
+                .addModifiers(KModifier.SUSPEND)
+                .addStatement("return awaitOkResponse().headers()")
+                .build())
+
+        funList.add(
+            FunSpec.builder("awaitOkResponse")
+                .addModifiers(KModifier.SUSPEND)
+                .addStatement("return await(OkResponseParser())")
+                .build())
+
+        funList.add(
+            FunSpec.builder("await")
+                .addModifiers(KModifier.SUSPEND)
+                .addTypeVariable(anyT)
+                .addParameter("parser", parserTName)
+                .addStatement("return newCall().%T(parser)", awaitName)
+                .build())
+
         if ("Android" == platform) {
+            funList.add(
+                FunSpec.builder("awaitBitmap")
+                    .addModifiers(KModifier.SUSPEND)
+                    .addStatement("return await(BitmapParser())")
+                    .build())
+
             funList.add(
                 FunSpec.builder("asBitmap")
                     .addStatement("return asParser(%T())", bitmapParserName)
@@ -159,7 +326,7 @@ class ParserAnnotatedClass {
                 .build())
 
         funList.add(
-            FunSpec.builder("asInteger")
+            FunSpec.builder("asInt")
                 .addStatement("return asObject(Int::class.java)")
                 .build())
 
@@ -373,7 +540,7 @@ class ParserAnnotatedClass {
         }
 
         //自定义解析器对应的asXxx方法里面的语句
-        val statementBuilder = StringBuilder("return as$key(")
+        var statementBuilder = StringBuilder("return as$key(")
         repeat(typeVariableNames.size) {
             statementBuilder.append("Any::class.java,")
         }
@@ -381,9 +548,24 @@ class ParserAnnotatedClass {
             statementBuilder.deleteCharAt(statementBuilder.length - 1)
         }
         statementBuilder.append(")")
-        val funBuilder = FunSpec.builder("as$key")
+        val asFunBuilder = FunSpec.builder("as$key")
             .addStatement(statementBuilder.toString())
-        funList.add(funBuilder.build())
+        funList.add(asFunBuilder.build())
+
+        //自定义解析器对应的asXxx方法里面的语句
+        statementBuilder = StringBuilder("return await$key(")
+        repeat(typeVariableNames.size) {
+            statementBuilder.append("Any::class.java,")
+        }
+        if (statementBuilder.last() == ',') {
+            statementBuilder.deleteCharAt(statementBuilder.length - 1)
+        }
+        statementBuilder.append(")")
+        val awaitFunBuilder = FunSpec.builder("await$key")
+            .addModifiers(KModifier.SUSPEND)
+            .addStatement(statementBuilder.toString())
+
+        funList.add(awaitFunBuilder.build())
     }
 
     //根据@Parser注解，生成asXxx(KClass<T>)类型方法 ，kotlin专用
@@ -401,7 +583,7 @@ class ParserAnnotatedClass {
         }
 
         //自定义解析器对应的asXxx方法里面的语句
-        val statementBuilder = StringBuilder("return as$key(") //方法里面的表达式
+        var statementBuilder = StringBuilder("return as$key(") //方法里面的表达式
         parameterSpecs.forEach {
             statementBuilder.append(it.name).append(".java,")
         }
@@ -410,7 +592,32 @@ class ParserAnnotatedClass {
         }
 
         statementBuilder.append(")")
-        val funBuilder = FunSpec.builder("as$key")
+        var funBuilder = FunSpec.builder("as$key")
+            .addParameters(parameterSpecs)
+            .addStatement(statementBuilder.toString())
+
+        typeVariableNames.forEach {
+            if (it.bounds.isEmpty()
+                || (it.bounds.size == 1 && it.bounds[0].toString() == "java.lang.Object")) {
+                funBuilder.addTypeVariable(TypeVariableName(it.name, anyTypeName))
+            } else {
+                funBuilder.addTypeVariable(it.toKClassTypeName() as TypeVariableName)
+            }
+        }
+        funList.add(funBuilder.build())
+
+        //自定义解析器对应的asXxx方法里面的语句
+        statementBuilder = StringBuilder("return await$key(") //方法里面的表达式
+        parameterSpecs.forEach {
+            statementBuilder.append(it.name).append(".java,")
+        }
+        if (statementBuilder.last() == ',') {
+            statementBuilder.deleteCharAt(statementBuilder.length - 1)
+        }
+
+        statementBuilder.append(")")
+        funBuilder = FunSpec.builder("await$key")
+            .addModifiers(KModifier.SUSPEND)
             .addParameters(parameterSpecs)
             .addStatement(statementBuilder.toString())
 
@@ -440,7 +647,7 @@ class ParserAnnotatedClass {
         }
 
         //自定义解析器对应的asXxx方法里面的语句
-        val statementBuilder = StringBuilder("return asParser(%T") //方法里面的表达式
+        var statementBuilder = StringBuilder("return asParser(%T") //方法里面的表达式
         if (typeVariableNames.size > 0) { //添加泛型
             statementBuilder.append("<")
             var i = 0
@@ -461,13 +668,48 @@ class ParserAnnotatedClass {
             statementBuilder.deleteCharAt(statementBuilder.length - 1)
         }
         statementBuilder.append("))")
-        val funBuilder = FunSpec.builder("as$key")
+        var funBuilder = FunSpec.builder("as$key")
             .addParameters(parameterSpecs)
             .addStatement(statementBuilder.toString(), typeElement.asClassName())
 
-//        typeVariableNames.forEach {
-//            funBuilder.addTypeVariable(TypeVariableName(it.name, anyTypeName))
-//        }
+        typeVariableNames.forEach {
+            if (it.bounds.isEmpty()
+                || (it.bounds.size == 1 && it.bounds[0].toString() == "java.lang.Object")) {
+                funBuilder.addTypeVariable(TypeVariableName(it.name, anyTypeName))
+            } else {
+                funBuilder.addTypeVariable(it.toKClassTypeName() as TypeVariableName)
+            }
+        }
+        funList.add(funBuilder.build())
+
+
+        //自定义解析器对应的asXxx方法里面的语句
+        statementBuilder = StringBuilder("return await(%T") //方法里面的表达式
+        if (typeVariableNames.size > 0) { //添加泛型
+            statementBuilder.append("<")
+            var i = 0
+            val size = typeVariableNames.size
+            while (i < size) {
+                val variableName = typeVariableNames[i]
+                statementBuilder.append(variableName.name)
+                    .append(if (i == size - 1) ">" else ",")
+                i++
+            }
+        }
+
+        statementBuilder.append("(")
+        parameterSpecs.forEach {
+            statementBuilder.append(it.name).append(",")
+        }
+        if (statementBuilder.last() == ',') {
+            statementBuilder.deleteCharAt(statementBuilder.length - 1)
+        }
+        statementBuilder.append("))")
+        funBuilder = FunSpec.builder("await$key")
+            .addModifiers(KModifier.SUSPEND)
+            .addParameters(parameterSpecs)
+            .addStatement(statementBuilder.toString(), typeElement.asClassName())
+
         typeVariableNames.forEach {
             if (it.bounds.isEmpty()
                 || (it.bounds.size == 1 && it.bounds[0].toString() == "java.lang.Object")) {
