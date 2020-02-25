@@ -61,6 +61,8 @@ class ParserAnnotatedClass {
         mElementMap[name] = typeElement
     }
 
+    var awaitEndIndex = 0 //最后一个awaitXxx方法下标
+
     fun getMethodList(platform: String): List<FunSpec> {
 
         val funList = ArrayList<FunSpec>()
@@ -286,11 +288,14 @@ class ParserAnnotatedClass {
 
         funList.add(
             FunSpec.builder("await")
+                .addKdoc("所有的awaitXxx方法,最终都会调用本方法\n")
                 .addModifiers(KModifier.SUSPEND)
                 .addTypeVariable(anyT)
                 .addParameter("parser", parserTName)
                 .addStatement("return newCall().%T(parser)", awaitName)
                 .build())
+
+        awaitEndIndex = funList.size
 
         if ("Android" == platform) {
             funList.add(
@@ -433,10 +438,11 @@ class ParserAnnotatedClass {
 
         funList.add(
             FunSpec.builder("asParser")
+                .addKdoc("所有的asXxx方法,最终都会调用本方法\n")
                 .addTypeVariable(anyT)
                 .addParameter("parser", parserTName)
                 .addStatement("setConverter(param)")
-                .addStatement("var observable=%T.syncFrom(addDefaultDomainIfAbsent(param),parser)", httpSenderName)
+                .addStatement("var observable = %T.syncFrom(addDefaultDomainIfAbsent(param),parser)", httpSenderName)
                 .beginControlFlow("if(scheduler!=null)")
                 .addStatement("observable=observable.subscribeOn(scheduler)")
                 .endControlFlow()
@@ -552,7 +558,7 @@ class ParserAnnotatedClass {
             .addStatement(statementBuilder.toString())
         funList.add(asFunBuilder.build())
 
-        //自定义解析器对应的asXxx方法里面的语句
+        //自定义解析器对应的awaitXxx方法里面的语句
         statementBuilder = StringBuilder("return await$key(")
         repeat(typeVariableNames.size) {
             statementBuilder.append("Any::class.java,")
@@ -565,7 +571,7 @@ class ParserAnnotatedClass {
             .addModifiers(KModifier.SUSPEND)
             .addStatement(statementBuilder.toString())
 
-        funList.add(awaitFunBuilder.build())
+        funList.add(awaitEndIndex++, awaitFunBuilder.build())
     }
 
     //根据@Parser注解，生成asXxx(KClass<T>)类型方法 ，kotlin专用
@@ -606,7 +612,7 @@ class ParserAnnotatedClass {
         }
         funList.add(funBuilder.build())
 
-        //自定义解析器对应的asXxx方法里面的语句
+        //自定义解析器对应的awaitXxx方法里面的语句
         statementBuilder = StringBuilder("return await$key(") //方法里面的表达式
         parameterSpecs.forEach {
             statementBuilder.append(it.name).append(".java,")
@@ -629,7 +635,7 @@ class ParserAnnotatedClass {
                 funBuilder.addTypeVariable(it.toKClassTypeName() as TypeVariableName)
             }
         }
-        funList.add(funBuilder.build())
+        funList.add(awaitEndIndex++, funBuilder.build())
     }
 
     //根据@Parser注解，生成asXxx(Class<T>)类型方法
@@ -683,7 +689,7 @@ class ParserAnnotatedClass {
         funList.add(funBuilder.build())
 
 
-        //自定义解析器对应的asXxx方法里面的语句
+        //自定义解析器对应的awaitXxx方法里面的语句
         statementBuilder = StringBuilder("return await(%T") //方法里面的表达式
         if (typeVariableNames.size > 0) { //添加泛型
             statementBuilder.append("<")
@@ -718,6 +724,6 @@ class ParserAnnotatedClass {
                 funBuilder.addTypeVariable(it.toKClassTypeName() as TypeVariableName)
             }
         }
-        funList.add(funBuilder.build())
+        funList.add(awaitEndIndex++, funBuilder.build())
     }
 }

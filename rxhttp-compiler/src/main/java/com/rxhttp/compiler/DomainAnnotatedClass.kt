@@ -39,20 +39,18 @@ class DomainAnnotatedClass {
                 .addModifiers(KModifier.PRIVATE)
                 .addParameter("url", String::class)
                 .addParameter("domain", String::class)
-                .addCode("if (url.startsWith(\"http\")) return url;\n" +
-                    "var newUrl : String\n" +
-                    "if (url.startsWith(\"/\")) {\n" +
-                    "    if (domain.endsWith(\"/\"))\n" +
-                    "        newUrl = domain + url.substring(1);\n" +
-                    "    else\n" +
-                    "        newUrl = domain + url;\n" +
-                    "} else if (domain.endsWith(\"/\")) {\n" +
-                    "    newUrl = domain + url;\n" +
-                    "} else {\n" +
-                    "    newUrl = domain + \"/\" + url;\n" +
-                    "}\n" +
-                    "return newUrl;\n")
-                .returns(String::class)
+                .addCode("""
+                        return 
+                        if (url.startsWith("http")) {     
+                            url                           
+                        } else if (url.startsWith("/")) {  
+                            domain + if (domain.endsWith("/")) url.substring(1) else url             
+                        } else if (domain.endsWith("/")) {
+                            domain + url              
+                        } else {                          
+                            domain + "/" + url            
+                        }                                 
+                """.trimIndent())
                 .build())
         return funList
     }
