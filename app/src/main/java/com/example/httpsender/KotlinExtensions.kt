@@ -2,7 +2,6 @@ package com.example.httpsender
 
 import android.content.Context
 import android.net.ConnectivityManager
-import android.text.TextUtils
 import com.google.gson.JsonSyntaxException
 import rxhttp.wrapper.exception.HttpStatusCodeException
 import rxhttp.wrapper.exception.ParseException
@@ -52,17 +51,16 @@ fun Throwable.errorCode(): Int {
 }
 
 fun Throwable.errorMsg(): String? {
-    var errorMsg = handleNetworkException(this) //网络异常
-    if (this is HttpStatusCodeException) { //请求失败异常
+    var errorMsg = handleNetworkException(this)  //网络异常
+    if (this is HttpStatusCodeException) {               //请求失败异常
         val code = this.statusCode
         if ("416" == code) {
             errorMsg = "请求范围不符合要求"
         }
-    } else if (this is JsonSyntaxException) { //请求成功，但Json语法异常,导致解析失败
+    } else if (this is JsonSyntaxException) {  //请求成功，但Json语法异常,导致解析失败
         errorMsg = "数据解析失败,请稍后再试"
-    } else if (this is ParseException) { // ParseException异常表明请求成功，但是数据不正确
-        errorMsg = this.message
-        if (TextUtils.isEmpty(errorMsg)) errorMsg = errorCode //errorMsg为空，显示errorCode
+    } else if (this is ParseException) {       // ParseException异常表明请求成功，但是数据不正确
+        errorMsg = this.message ?: errorCode   //errorMsg为空，显示errorCode
     }
     return errorMsg
 }
