@@ -7,9 +7,12 @@ import android.os.Bundle
 import android.os.Environment
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import com.example.httpsender.databinding.MainActivityBinding
-import com.example.httpsender.entity.*
+import com.example.httpsender.databinding.MainActivityBinding.inflate
+import com.example.httpsender.entity.Article
+import com.example.httpsender.entity.Location
+import com.example.httpsender.entity.Name
+import com.example.httpsender.entity.NewsDataXml
 import com.google.gson.Gson
 import com.rxjava.rxlife.life
 import com.rxjava.rxlife.lifeOnMain
@@ -27,8 +30,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mBinding: MainActivityBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mBinding = DataBindingUtil.setContentView(this, R.layout.main_activity)
-
+        mBinding = inflate(layoutInflater)
+        setContentView(mBinding.root)
     }
 
     fun bitmap(view: View) {
@@ -39,10 +42,9 @@ class MainActivity : AppCompatActivity() {
             .subscribe({
                 mBinding.tvResult.background = BitmapDrawable(it)
             }, {
-                val error = ErrorInfo(it)
-                mBinding.tvResult.text = error.errorMsg
+                mBinding.tvResult.text = it.errorMsg()
                 //失败回调
-                error.show("图片加载失败,请稍后再试!")
+                it.show("图片加载失败,请稍后再试!")
             })
     }
 
@@ -50,10 +52,9 @@ class MainActivity : AppCompatActivity() {
     fun sendGet(view: View) {
         AndroidScope(this)
             .onError {
-                val error = ErrorInfo(it)
-                mBinding.tvResult.text = error.errorMsg
+                mBinding.tvResult.text = it.errorMsg()
                 //失败回调
-                error.show("发送失败,请稍后再试!")
+                it.show("发送失败,请稍后再试!")
             }.launch {
                 val pageList = get("/article/list/0/json")
                     .awaitResponsePageList(Article::class)
@@ -72,10 +73,9 @@ class MainActivity : AppCompatActivity() {
             .subscribe({
                 mBinding.tvResult.text = Gson().toJson(it)
             }, {
-                val error = ErrorInfo(it)
-                mBinding.tvResult.text = error.errorMsg
+                mBinding.tvResult.text = it.errorMsg()
                 //失败回调
-                error.show("发送失败,请稍后再试!")
+                it.show("发送失败,请稍后再试!")
             })
     }
 
@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                }
            }
          */
-        val interestList: MutableList<String> = ArrayList() //爱好
+        val interestList = ArrayList<String>() //爱好
         interestList.add("羽毛球")
         interestList.add("游泳")
         val address = "{\"street\":\"科技园路.\",\"city\":\"江苏苏州\",\"country\":\"中国\"}"
@@ -118,10 +118,9 @@ class MainActivity : AppCompatActivity() {
             .subscribe({
                 mBinding.tvResult.text = it
             }, {
-                val error = ErrorInfo(it)
-                mBinding.tvResult.text = error.errorMsg
+                mBinding.tvResult.text = it.errorMsg()
                 //失败回调
-                error.show("发送失败,请稍后再试!")
+                it.show("发送失败,请稍后再试!")
             })
     }
 
@@ -159,10 +158,9 @@ class MainActivity : AppCompatActivity() {
             .subscribe({
                 mBinding.tvResult.text = it
             }, {
-                val error = ErrorInfo(it)
-                mBinding.tvResult.text = error.errorMsg
+                mBinding.tvResult.text = it.errorMsg()
                 //失败回调
-                error.show("发送失败,请稍后再试!")
+                it.show("发送失败,请稍后再试!")
             })
     }
 
@@ -175,10 +173,9 @@ class MainActivity : AppCompatActivity() {
             .subscribe({
                 mBinding.tvResult.text = Gson().toJson(it)
             }, {
-                val error = ErrorInfo(it)
-                mBinding.tvResult.text = error.errorMsg
+                mBinding.tvResult.text = it.errorMsg()
                 //失败回调
-                error.show("发送失败,请稍后再试!")
+                it.show("发送失败,请稍后再试!")
             })
     }
 
@@ -191,10 +188,9 @@ class MainActivity : AppCompatActivity() {
             .subscribe({
                 mBinding.tvResult.text = Gson().toJson(it)
             }, {
-                val error = ErrorInfo(it)
-                mBinding.tvResult.text = error.errorMsg
+                mBinding.tvResult.text = it.errorMsg()
                 //失败回调
-                error.show("发送失败,请稍后再试!")
+                it.show("发送失败,请稍后再试!")
             })
     }
 
@@ -209,8 +205,7 @@ class MainActivity : AppCompatActivity() {
                 //下载成功
             }, {
                 //下载失败
-                val error = ErrorInfo(it)
-                error.show("下载失败,请稍后再试!")
+                it.show("下载失败,请稍后再试!")
             })
     }
 
@@ -231,10 +226,9 @@ class MainActivity : AppCompatActivity() {
                 //下载完成，处理相关逻辑
                 mBinding.tvResult.append("\n下载成功 : $it")
             }, {
-                val error = ErrorInfo(it)
-                mBinding.tvResult.append("\n" + error.errorMsg)
+                mBinding.tvResult.append("\n" + it.errorMsg())
                 //下载失败，处理相关逻辑
-                error.show("下载失败,请稍后再试!")
+                it.show("下载失败,请稍后再试!")
             })
     }
 
@@ -251,8 +245,7 @@ class MainActivity : AppCompatActivity() {
                 //下载成功
             }, {
                 //下载失败
-                val error = ErrorInfo(it)
-                error.show("下载失败,请稍后再试!")
+                it.show("下载失败,请稍后再试!")
             })
     }
 
@@ -277,9 +270,8 @@ class MainActivity : AppCompatActivity() {
                 mBinding.tvResult.append("\n下载成功 : $it")
             }, {
                 //下载失败
-                val error = ErrorInfo(it)
-                mBinding.tvResult.append("\n" + error.errorMsg)
-                error.show("下载失败,请稍后再试!")
+                mBinding.tvResult.append("\n" + it.errorMsg())
+                it.show("下载失败,请稍后再试!")
             })
     }
 
@@ -293,11 +285,10 @@ class MainActivity : AppCompatActivity() {
                 mBinding.tvResult.append("\n")
                 mBinding.tvResult.append(it)
             }, {
-                val error = ErrorInfo(it)
                 mBinding.tvResult.append("\n")
-                mBinding.tvResult.append(error.errorMsg)
+                mBinding.tvResult.append(it.errorMsg())
                 //失败回调
-                error.show("上传失败,请稍后再试!")
+                it.show("上传失败,请稍后再试!")
             })
     }
 
@@ -317,10 +308,9 @@ class MainActivity : AppCompatActivity() {
                 //上传成功
                 mBinding.tvResult.append("\n上传成功 : $it")
             }, {
-                val error = ErrorInfo(it)
                 //上传失败
-                mBinding.tvResult.append("\n" + error.errorMsg)
-                error.show("上传失败,请稍后再试!")
+                mBinding.tvResult.append("\n" + it.errorMsg())
+                it.show("上传失败,请稍后再试!")
             })
     }
 
