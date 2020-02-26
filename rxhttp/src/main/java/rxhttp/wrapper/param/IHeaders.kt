@@ -16,15 +16,6 @@ interface IHeaders<P : Param<P>> {
     fun addHeader(line: String): P
     fun setHeader(key: String, value: String): P
     fun removeAllHeader(key: String): P
-    /**
-     * 设置断点下载开始位置，结束位置默认为文件末尾
-     *
-     * @param startIndex 开始位置
-     * @return Param
-     */
-    fun setRangeHeader(startIndex: Long): P {
-        return setRangeHeader(startIndex, -1)
-    }
 
     /**
      * 设置断点下载范围
@@ -36,12 +27,11 @@ interface IHeaders<P : Param<P>> {
      * @param endIndex   结束位置
      * @return Param
      */
-    fun setRangeHeader(startIndex: Long, endIndex: Long): P {
-        var endIndex = endIndex
-        if (endIndex < startIndex) endIndex = -1
+    fun setRangeHeader(startIndex: Long, endIndex: Long = -1L): P {
+        val toIndex = if (endIndex > startIndex) endIndex else -1
         var headerValue = "bytes=$startIndex-"
-        if (endIndex >= 0) {
-            headerValue += endIndex
+        if (toIndex >= 0) {
+            headerValue += toIndex
         }
         return addHeader("RANGE", headerValue)
     }

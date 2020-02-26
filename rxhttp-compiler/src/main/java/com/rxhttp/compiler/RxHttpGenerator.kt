@@ -90,12 +90,6 @@ class RxHttpGenerator {
         val rxHttpJsonArray = RXHTTP.parameterizedBy(jsonArrayParamName, rxHttpJsonArrayName)
         val methodList = ArrayList<FunSpec>() //方法集合
         val companionMethodList = ArrayList<FunSpec>()
-        methodList.add(//添加构造方法
-            FunSpec.constructorBuilder()
-                .addModifiers(KModifier.PROTECTED)
-                .addParameter("param", p)
-                .addStatement("this.param = param")
-                .build())
 
         companionMethodList.add(
             FunSpec.builder("setDebug")
@@ -104,18 +98,14 @@ class RxHttpGenerator {
                 .addStatement("%T.setDebug(debug)", httpSenderName)
                 .build())
 
+        val debugParam = ParameterSpec.builder("debug", Boolean::class)
+            .defaultValue("false").build()
         companionMethodList.add(
             FunSpec.builder("init")
                 .addAnnotation(JvmStatic::class)
+                .addAnnotation(JvmOverloads::class)
                 .addParameter("okHttpClient", okHttpClientName)
-                .addStatement("%T.init(okHttpClient)", httpSenderName)
-                .build())
-
-        companionMethodList.add(
-            FunSpec.builder("init")
-                .addAnnotation(JvmStatic::class)
-                .addParameter("okHttpClient", okHttpClientName)
-                .addParameter("debug", Boolean::class)
+                .addParameter(debugParam)
                 .addStatement("%T.init(okHttpClient,debug)", httpSenderName)
                 .build())
 
@@ -208,11 +198,6 @@ class RxHttpGenerator {
             .mutable()
             .initializer("%T.getConverter()", rxHttpPluginsName)
             .build()
-        val paramSpec = PropertySpec.builder("param", p, KModifier.PROTECTED)
-            .getter(FunSpec.getterBuilder()
-                .addStatement("return field").build())
-            .mutable()
-            .build()
 
         val suppressAnno = AnnotationSpec.builder(Suppress::class)
             .addMember("\"UNCHECKED_CAST\"")
@@ -225,15 +210,22 @@ class RxHttpGenerator {
             .addKdoc("Github" +
                 "\nhttps://github.com/liujingxing/RxHttp" +
                 "\nhttps://github.com/liujingxing/RxLife\n")
-            .addModifiers(KModifier.PUBLIC, KModifier.OPEN)
+            .addModifiers(KModifier.OPEN)
             .addAnnotation(suppressAnno)
-            .addProperty(paramSpec)
+            .primaryConstructor(FunSpec.constructorBuilder() //添加构造方法
+                .addModifiers(KModifier.PROTECTED)
+                .addParameter("param", p)
+                .build())
+            .addProperty(PropertySpec.builder("param", p)  //添加变量
+                .mutable(true)
+                .initializer("param")
+                .build())
             .addProperty(schedulerField)
             .addProperty(converterSpec)
-            .addTypeVariable(p)
+            .addTypeVariable(p) //添加泛型
             .addTypeVariable(r)
-            .addType(companionType)
-            .addFunctions(methodList)
+            .addType(companionType) //添加伴生对象
+            .addFunctions(methodList)  //添加方法
             .build()
         // Write file
         FileSpec.builder(packageName, "RxHttp")
@@ -250,15 +242,6 @@ class RxHttpGenerator {
                 .build())
 
         methodList.add(
-            FunSpec.builder("add")
-                .addParameter("key", String::class)
-                .addParameter("value", Any::class.asTypeName().copy(nullable = true))
-                .addStatement("param.add(key,value)")
-                .addStatement("return this")
-                .returns(rxHttpNoBodyName)
-                .build())
-
-        methodList.add(
             FunSpec.builder("addEncoded")
                 .addParameter("key", String::class)
                 .addParameter("value", Any::class.asTypeName().copy(nullable = true))
@@ -267,15 +250,16 @@ class RxHttpGenerator {
                 .returns(rxHttpNoBodyName)
                 .build())
 
+        val isAddParam = ParameterSpec.builder("isAdd", Boolean::class)
+            .defaultValue("true").build()
 
         methodList.add(
             FunSpec.builder("add")
+                .addAnnotation(JvmOverloads::class)
                 .addParameter("key", String::class)
                 .addParameter("value", Any::class.asTypeName().copy(nullable = true))
-                .addParameter("isAdd", Boolean::class)
-                .beginControlFlow("if(isAdd)")
-                .addStatement("param.add(key,value)")
-                .endControlFlow()
+                .addParameter(isAddParam)
+                .addStatement("if(isAdd) param.add(key,value)")
                 .addStatement("return this")
                 .returns(rxHttpNoBodyName)
                 .build())
@@ -356,16 +340,6 @@ class RxHttpGenerator {
                 .addParameter("param", formParamName)
                 .build())
 
-
-        methodList.add(
-            FunSpec.builder("add")
-                .addParameter("key", String::class)
-                .addParameter("value", Any::class.asTypeName().copy(nullable = true))
-                .addStatement("param.add(key,value)")
-                .addStatement("return this")
-                .returns(rxHttpFormName)
-                .build())
-
         methodList.add(
             FunSpec.builder("addEncoded")
                 .addParameter("key", String::class)
@@ -375,15 +349,13 @@ class RxHttpGenerator {
                 .returns(rxHttpFormName)
                 .build())
 
-
         methodList.add(
             FunSpec.builder("add")
+                .addAnnotation(JvmOverloads::class)
                 .addParameter("key", String::class)
                 .addParameter("value", Any::class.asTypeName().copy(nullable = true))
-                .addParameter("isAdd", Boolean::class)
-                .beginControlFlow("if(isAdd)")
-                .addStatement("param.add(key,value)")
-                .endControlFlow()
+                .addParameter(isAddParam)
+                .addStatement("if(isAdd) param.add(key,value)")
                 .addStatement("return this")
                 .returns(rxHttpFormName)
                 .build())
@@ -555,23 +527,27 @@ class RxHttpGenerator {
             .build()
 
         val observeOnScheduler = ParameterSpec.builder("observeOnScheduler", schedulerName.copy(nullable = true))
+            .defaultValue("null")
             .build()
 
         methodList.add(
             FunSpec.builder("asUpload")
+                .addAnnotation(JvmOverloads::class)
                 .addTypeVariable(anyT)
                 .addParameter(parser)
                 .addParameter("progressConsumer", consumerProgressTName)
                 .addParameter(observeOnScheduler)
-                .addStatement("setConverter(param)")
-                .addStatement("var observable = %T\n" +
-                    ".uploadProgress(addDefaultDomainIfAbsent(param), parser, scheduler)", httpSenderName)
-                .beginControlFlow("if(observeOnScheduler != null)")
-                .addStatement("observable=observable.observeOn(observeOnScheduler)")
-                .endControlFlow()
-                .addStatement("return observable.doOnNext(progressConsumer)\n" +
-                    ".filter { it.isCompleted }\n" +
-                    ".map { it.result }")
+                .addCode("""
+                    setConverter(param)                                                    
+                    var observable = %T                                            
+                        .uploadProgress(addDefaultDomainIfAbsent(param), parser, scheduler)
+                    if (observeOnScheduler != null) {                                      
+                        observable = observable.observeOn(observeOnScheduler)              
+                    }                                                                      
+                    return observable.doOnNext(progressConsumer)                           
+                        .filter { it.isCompleted }                                         
+                        .map { it.result }                                                 
+                """.trimIndent(), httpSenderName)
                 .returns(observableTName)
                 .build())
         val rxHttpFormSpec = TypeSpec.classBuilder("RxHttp_FormParam")
@@ -597,21 +573,11 @@ class RxHttpGenerator {
 
         methodList.add(
             FunSpec.builder("add")
+                .addAnnotation(JvmOverloads::class)
                 .addParameter("key", String::class)
                 .addParameter("value", Any::class.asTypeName().copy(nullable = true))
-                .addStatement("param.add(key,value)")
-                .addStatement("return this")
-                .returns(rxHttpJsonName)
-                .build())
-
-        methodList.add(
-            FunSpec.builder("add")
-                .addParameter("key", String::class)
-                .addParameter("value", Any::class.asTypeName().copy(nullable = true))
-                .addParameter("isAdd", Boolean::class)
-                .beginControlFlow("if(isAdd)")
-                .addStatement("param.add(key,value)")
-                .endControlFlow()
+                .addParameter(isAddParam)
+                .addStatement("if(isAdd) param.add(key,value)")
                 .addStatement("return this")
                 .returns(rxHttpJsonName)
                 .build())
@@ -683,21 +649,11 @@ class RxHttpGenerator {
 
         methodList.add(
             FunSpec.builder("add")
+                .addAnnotation(JvmOverloads::class)
                 .addParameter("key", String::class)
                 .addParameter("value", Any::class.asTypeName().copy(nullable = true))
-                .addStatement("param.add(key,value)")
-                .addStatement("return this")
-                .returns(rxHttpJsonArrayName)
-                .build())
-
-        methodList.add(
-            FunSpec.builder("add")
-                .addParameter("key", String::class)
-                .addParameter("value", Any::class.asTypeName().copy(nullable = true))
-                .addParameter("isAdd", Boolean::class)
-                .beginControlFlow("if(isAdd)")
-                .addStatement("param.add(key,value)")
-                .endControlFlow()
+                .addParameter(isAddParam)
+                .addStatement("if(isAdd) param.add(key,value)")
                 .addStatement("return this")
                 .returns(rxHttpJsonArrayName)
                 .build())

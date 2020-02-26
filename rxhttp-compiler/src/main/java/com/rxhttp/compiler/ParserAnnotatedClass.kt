@@ -482,46 +482,35 @@ class ParserAnnotatedClass {
             FunSpec.builder("asDownload")
                 .addParameter("destPath", String::class)
                 .addParameter("progressConsumer", consumerProgressStringName)
-                .addStatement("return asDownload(destPath, 0, progressConsumer, null)")
-                .build())
-
-        funList.add(
-            FunSpec.builder("asDownload")
-                .addParameter("destPath", String::class)
-                .addParameter("progressConsumer", consumerProgressStringName)
                 .addParameter("observeOnScheduler", schedulerName)
                 .addStatement("return asDownload(destPath, 0, progressConsumer, observeOnScheduler)")
                 .build())
 
-        funList.add(
-            FunSpec.builder("asDownload")
-                .addParameter("destPath", String::class)
-                .addParameter("offsetSize", Long::class)
-                .addParameter("progressConsumer", consumerProgressStringName)
-                .addStatement("return asDownload(destPath, offsetSize, progressConsumer, null)")
-                .build())
-
-
         val offsetSize = ParameterSpec.builder("offsetSize", Long::class)
+            .defaultValue("0L")
             .build()
         val observeOnScheduler = ParameterSpec.builder("observeOnScheduler", schedulerName.copy(nullable = true))
+            .defaultValue("null")
             .build()
 
         funList.add(
             FunSpec.builder("asDownload")
+                .addAnnotation(JvmOverloads::class)
                 .addParameter("destPath", String::class)
                 .addParameter(offsetSize)
                 .addParameter("progressConsumer", consumerProgressStringName)
                 .addParameter(observeOnScheduler)
-                .addStatement("setConverter(param)")
-                .addStatement("var observable = %T\n" +
-                    ".downloadProgress(addDefaultDomainIfAbsent(param),destPath,offsetSize,scheduler)", httpSenderName)
-                .beginControlFlow("if(observeOnScheduler != null)")
-                .addStatement("observable=observable.observeOn(observeOnScheduler)")
-                .endControlFlow()
-                .addStatement("return observable.doOnNext(progressConsumer)\n" +
-                    ".filter { it.isCompleted }\n" +
-                    ".map { it.result }")
+                .addCode("""
+                    setConverter(param)                                                                    
+                    var observable = HttpSender                                                            
+                        .downloadProgress(addDefaultDomainIfAbsent(param), destPath, offsetSize, scheduler)
+                    if (observeOnScheduler != null) {                                                      
+                        observable = observable.observeOn(observeOnScheduler)                              
+                    }                                                                                      
+                    return observable.doOnNext(progressConsumer)                                           
+                        .filter { it.isCompleted }                                                         
+                        .map { it.result }                                                                 
+                """.trimIndent())
                 .returns(observableStringName)
                 .build())
         return funList
