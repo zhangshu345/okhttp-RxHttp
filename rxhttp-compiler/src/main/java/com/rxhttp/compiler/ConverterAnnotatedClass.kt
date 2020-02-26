@@ -27,11 +27,10 @@ class ConverterAnnotatedClass {
                 funList.add(
                     FunSpec.builder("set$key")
                         .addModifiers(KModifier.PUBLIC)
-                        .addStatement("if (%T.%L == null)\n" +
-                            "throw IllegalArgumentException(\"converter can not be null\");",
-                            value.enclosingElement.asType().asTypeName(),
-                            value.simpleName.toString())
-                        .addStatement("this.localConverter = %T.%L",
+                        .addStatement("""
+                            this.localConverter = %T.%L
+                            ?: throw IllegalArgumentException("converter can not be null")
+                        """.trimIndent(),
                             value.enclosingElement.asType().asTypeName(),
                             value.simpleName.toString())
                         .addStatement("return this as R")

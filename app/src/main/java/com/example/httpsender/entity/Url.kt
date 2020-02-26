@@ -9,14 +9,12 @@ import rxhttp.wrapper.annotation.Domain
  * Date: 2019/3/27
  * Time: 10:36
  */
-class Url {
+object Url {
 
-    companion object {
-        @Domain(name = "Update")
-        const val update = "http://update.9158.com"
+    @Domain(name = "Update")
+    const val update = "http://update.9158.com"
 
-        @DefaultDomain //设置为默认域名
-        const val baseUrl = "https://www.wanandroid.com/"
-    }
+    @DefaultDomain //设置为默认域名
+    const val baseUrl = "https://www.wanandroid.com/"
 
 }
