@@ -21,7 +21,7 @@ import javax.tools.Diagnostic
  * Time: 20:36
  */
 class AnnotationProcessor : AbstractProcessor() {
-    private var typeUtils: Types? = null
+    private lateinit var typeUtils: Types
     private var messager: Messager? = null
     private var filer: Filer? = null
     private var elementUtils: Elements? = null
@@ -117,10 +117,10 @@ class AnnotationProcessor : AbstractProcessor() {
         }
         var currentClass = element
         while (true) {
-            val interfaces = currentClass.interfaces
-            for (typeMirror in interfaces) {
-                if (typeMirror.toString() != "rxhttp.wrapper.param.Param<P>") continue
-                return
+            for (typeMirror in currentClass.interfaces) {
+                if (typeMirror.toString() == "rxhttp.wrapper.param.Param<P>"){
+                    return
+                }
             }
             val superClassType = currentClass.superclass
             if (superClassType.kind == TypeKind.NONE) {
@@ -129,7 +129,7 @@ class AnnotationProcessor : AbstractProcessor() {
                     element.qualifiedName.toString(), Param::class.java.simpleName,
                     "rxhttp.wrapper.param.Param")
             }
-            currentClass = typeUtils!!.asElement(superClassType) as TypeElement
+            currentClass = typeUtils.asElement(superClassType) as TypeElement
         }
     }
 
@@ -146,12 +146,14 @@ class AnnotationProcessor : AbstractProcessor() {
                 element.simpleName.toString(), Parser::class.java.simpleName)
         }
         var currentClass = element
-        All@ while (true) {
-            val interfaces = currentClass.interfaces
-            for (typeMirror in interfaces) {
-                if (!typeMirror.toString().contains("rxhttp.wrapper.parse.Parser")) continue
-                break@All
+        while (true) {
+            //遍历实现的接口有没有Parser接口
+            for (typeMirror in currentClass.interfaces) {
+                if (typeMirror.toString().contains("rxhttp.wrapper.parse.Parser")) {
+                    return
+                }
             }
+            //未遍历到Parser，则找到父类继续，一直循环下去，直到最顶层的父类
             val superClassType = currentClass.superclass
             if (superClassType.kind == TypeKind.NONE) {
                 throw ProcessingException(element,
@@ -159,7 +161,8 @@ class AnnotationProcessor : AbstractProcessor() {
                     element.qualifiedName.toString(), Parser::class.java.simpleName,
                     "rxhttp.wrapper.parse.Parser<T>")
             }
-            currentClass = typeUtils!!.asElement(superClassType) as TypeElement
+            //TypeMirror转TypeElement
+            currentClass = typeUtils.asElement(superClassType) as TypeElement
         }
     }
 
@@ -175,10 +178,25 @@ class AnnotationProcessor : AbstractProcessor() {
                 "The variable %s is not static",
                 element.simpleName.toString())
         }
-        if ("rxhttp.wrapper.callback.IConverter" != element.asType().toString()) {
-            throw ProcessingException(element,
-                "The variable %s is not a IConverter",
-                element.simpleName.toString())
+        var classType = element.asType()
+        if ("rxhttp.wrapper.callback.IConverter" != classType.toString()) {
+            while (true) {
+                //TypeMirror转TypeElement
+                val currentClass = typeUtils.asElement(classType) as TypeElement
+                //遍历实现的接口有没有IConverter接口
+                for (mirror in currentClass.interfaces) {
+                    if (mirror.toString() == "rxhttp.wrapper.callback.IConverter") {
+                        return
+                    }
+                }
+                //未遍历到IConverter，则找到父类继续，一直循环下去，直到最顶层的父类
+                classType = currentClass.superclass
+                if (classType.kind == TypeKind.NONE) {
+                    throw ProcessingException(element,
+                        "The variable %s is not a IConverter",
+                        element.simpleName.toString())
+                }
+            }
         }
     }
 
