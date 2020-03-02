@@ -1,7 +1,14 @@
 package com.example.httpsender.param;
 
+import android.graphics.Point;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 import okhttp3.HttpUrl;
 import rxhttp.wrapper.annotation.Param;
+import rxhttp.wrapper.entity.KeyValuePair;
 import rxhttp.wrapper.param.Method;
 import rxhttp.wrapper.param.NoBodyParam;
 
@@ -18,22 +25,22 @@ public class GetEncryptParam extends NoBodyParam {
         super(url, Method.GET);
     }
 
-    public void test() {
-
+    public <T extends Point, R extends CharSequence> GetEncryptParam test(List<R> a, Map<T, R> map, T[]... b) throws IOException, IllegalArgumentException {
+        return this;
     }
 
     @Override
     public HttpUrl getHttpUrl() {
-        HttpUrl httpUrl = super.getHttpUrl();
-        int querySize = httpUrl.querySize();
         StringBuilder paramsBuilder = new StringBuilder(); //存储加密后的参数
-        for (int i = 0; i < querySize; i++) {
-            //这里遍历所有添加的参数，可对参数进行加密操作
-            String key = httpUrl.queryParameterName(i);
-            String value = httpUrl.queryParameterValue(i);
+        List<KeyValuePair> keyValuePairs = getKeyValuePairs();
+        if (keyValuePairs != null) {
+            for (KeyValuePair pair : getKeyValuePairs()) {
+                //这里遍历所有添加的参数，可对参数进行加密操作
+                String key = pair.getKey();
+                String value = pair.getValue().toString();
+                //加密逻辑自己写
 
-            //加密逻辑自己写
-
+            }
         }
         String simpleUrl = getSimpleUrl();  //拿到请求Url
         if (paramsBuilder.length() == 0) return HttpUrl.get(simpleUrl);

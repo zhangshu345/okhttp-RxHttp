@@ -96,6 +96,9 @@ open class NoBodyParam(url: String, method: Method) : AbstractParam<NoBodyParam>
         return BuildUtil.getHttpUrl(getSimpleUrl(), keyValuePairs).toString()
     }
 
+    val keyValuePairs: List<KeyValuePair>?
+        get() = mKeyValuePairs
+
     override fun toString(): String {
         return getUrl()
     }
