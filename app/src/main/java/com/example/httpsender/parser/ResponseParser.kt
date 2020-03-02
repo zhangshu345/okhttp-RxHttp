@@ -1,7 +1,8 @@
-package com.example.httpsender.parser.kotlin
+package com.example.httpsender.parser
 
 
 import com.example.httpsender.entity.Response
+import rxhttp.wrapper.annotation.Parser
 import rxhttp.wrapper.entity.ParameterizedTypeImpl
 import rxhttp.wrapper.exception.ParseException
 import rxhttp.wrapper.parse.AbstractParser
@@ -13,7 +14,7 @@ import java.io.IOException
  * Date: 2018/10/23
  * Time: 13:49
  */
-//@Parser(name = "Response")
+@Parser(name = "Response")
 class ResponseParser<T : Any> : AbstractParser<T> {
 
     protected constructor() : super()
@@ -22,7 +23,7 @@ class ResponseParser<T : Any> : AbstractParser<T> {
 
     @Throws(IOException::class)
     override fun onParse(response: okhttp3.Response): T {
-        val type = ParameterizedTypeImpl.get(Response::class.java, mType) //获取泛型类型
+        val type = ParameterizedTypeImpl[Response::class.java, mType] //获取泛型类型
         val data = convert<Response<T>>(response, type)
         var t: T? = data.data //获取data字段
         if (t == null && mType === String::class.java) {
