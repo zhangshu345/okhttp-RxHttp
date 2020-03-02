@@ -508,7 +508,7 @@ class ParserAnnotatedClass {
                         observable = observable.observeOn(observeOnScheduler)                              
                     }                                                                                      
                     return observable.doOnNext(progressConsumer)                                           
-                        .filter { it.isCompleted }                                                         
+                        .filter { it.isFinish }                                                         
                         .map { it.result }                                                                 
                 """.trimIndent())
                 .returns(observableStringName)

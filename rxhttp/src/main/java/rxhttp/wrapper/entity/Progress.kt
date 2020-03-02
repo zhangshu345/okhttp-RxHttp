@@ -29,7 +29,7 @@ class Progress<T> {
     /**
      * @return 上传/下载是否完成
      */
-    val isCompleted: Boolean
+    val isFinish: Boolean
         get() = progress == 100
 
     fun updateProgress() {
