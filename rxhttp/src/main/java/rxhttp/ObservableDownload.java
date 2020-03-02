@@ -68,6 +68,7 @@ public final class ObservableDownload extends Observable<Progress<String>> {
         observer.onSubscribe(emitter);
 
         try {
+            Progress<String> completeProgress = new Progress<>();  //下载完成回调
             Response response = execute(param, (progress, currentSize, totalSize) -> {
                 //这里最多回调100次,仅在进度有更新时,才会回调
                 Progress<String> p = new Progress<>(progress, currentSize, totalSize);
@@ -79,11 +80,17 @@ public final class ObservableDownload extends Observable<Progress<String>> {
                     if (currentProgress <= lastProgress) return;
                     lastProgress = currentProgress;
                 }
-                emitter.onNext(p);
+                if (p.isCompleted()) {
+                    //下载完成的回调，需要带上本地存储路径，故这里先保存进度
+                    completeProgress.set(p);
+                } else {
+                    emitter.onNext(p);
+                }
             });
             isBreakpointDown = response.header("Content-Range") != null;
             String filePath = new DownloadParser(destPath).onParse(response);
-            emitter.onNext(new Progress<>(filePath)); //最后一次回调文件下载路径
+            completeProgress.setResult(filePath);
+            emitter.onNext(completeProgress); //最后一次回调文件下载路径
             emitter.onComplete();
         } catch (Throwable e) {
             LogUtil.log(param, e);
@@ -104,8 +111,8 @@ public final class ObservableDownload extends Observable<Progress<String>> {
     }
 
     static class CreateEmitter<T>
-            extends AtomicReference<Disposable>
-            implements ObservableEmitter<T>, Disposable {
+        extends AtomicReference<Disposable>
+        implements ObservableEmitter<T>, Disposable {
 
         private static final long serialVersionUID = -3434801548987643227L;
 
@@ -197,8 +204,8 @@ public final class ObservableDownload extends Observable<Progress<String>> {
      * @param <T> the value type
      */
     static final class SerializedEmitter<T>
-            extends AtomicInteger
-            implements ObservableEmitter<T> {
+        extends AtomicInteger
+        implements ObservableEmitter<T> {
 
         private static final long serialVersionUID = 4883307006032401862L;
 

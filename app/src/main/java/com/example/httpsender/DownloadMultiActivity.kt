@@ -133,15 +133,13 @@ class DownloadMultiActivity : AppCompatActivity(), DownloadMultiAdapter.OnItemCl
         val length = File(destPath).length()
         val disposable = get(data.url)
             .setRangeHeader(length) //设置开始下载位置，结束位置默认为文件末尾
-            .asDownload(destPath, length, Consumer { progress: Progress<String> ->
+            .asDownload(destPath, length, Consumer {
                 //如果需要衔接上次的下载进度，则需要传入上次已下载的字节数length
                 //下载进度回调,0-100，仅在进度有更新时才会回调
-                if (!progress.isCompleted) {
-                    data.progress = progress.progress //当前进度 0-100
-                    data.currentSize = progress.currentSize //当前已下载的字节大小
-                    data.totalSize = progress.totalSize //要下载的总字节大小
+                    data.progress = it.progress //当前进度 0-100
+                    data.currentSize = it.currentSize //当前已下载的字节大小
+                    data.totalSize = it.totalSize //要下载的总字节大小
                     notifyDataSetChanged(false)
-                }
             }, AndroidSchedulers.mainThread())
             .doFinally {
                 //不管任务成功还是失败，如果还有在等待的任务，都开启下一个任务
