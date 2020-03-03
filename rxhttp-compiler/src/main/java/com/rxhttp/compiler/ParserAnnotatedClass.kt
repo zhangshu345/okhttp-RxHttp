@@ -50,6 +50,7 @@ class ParserAnnotatedClass {
     private val observableStringName = observableName.parameterizedBy(stringTypeName)
     private val consumerProgressStringName = consumerName.parameterizedBy(progressStringName)
     private val parserTName = parserName.parameterizedBy(t)
+    private val okHttpClientName = ClassName("okhttp3", "OkHttpClient")
 
     fun add(typeElement: TypeElement) {
         val annotation = typeElement.getAnnotation(Parser::class.java)
@@ -136,8 +137,15 @@ class ParserAnnotatedClass {
 
         funList.add(
             FunSpec.builder("newCall")
+                .addStatement("return newCall(getOkHttpClient())")
+                .returns(callName)
+                .build())
+
+        funList.add(
+            FunSpec.builder("newCall")
+                .addParameter("okHttp", okHttpClientName)
                 .addStatement("setConverter(param)")
-                .addStatement("return %T.newCall(addDefaultDomainIfAbsent(param))", httpSenderName)
+                .addStatement("return %T.newCall(okHttp, addDefaultDomainIfAbsent(param))", httpSenderName)
                 .returns(callName)
                 .build())
 
