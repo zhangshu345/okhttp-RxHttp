@@ -15,10 +15,26 @@ import java.io.IOException
  * Time: 13:49
  */
 @Parser(name = "ResponseList")
-class ResponseListParser<T : Any> : AbstractParser<MutableList<T>> {
+open class ResponseListParser<T : Any> : AbstractParser<MutableList<T>> {
 
+    /**
+     * 此构造方法适用于任意Class对象，但更多用于带泛型的Class对象，如：List<Student>
+     *
+     * 用法:
+     * Java: .asParser(new ResponseListParser<List<Student>>(){})
+     * Kotlin: .asParser(object : ResponseListParser<List<Student>>() {})
+     *
+     * 注：此构造方法一定要用protected关键字修饰，否则调用此构造方法将拿不到泛型类型
+     */
     protected constructor() : super()
 
+    /**
+     * 此构造方法仅适用于解析不带泛型的Class对象，如: Student.class
+     *
+     * 用法
+     * Java: .asParser(new ResponseListParser<>(Student.class))   或者  .asResponseList(Student.class)
+     * Kotlin: .asParser(ResponseListParser(Student::class.java)) 或者  .asResponseList(Student::class)
+     */
     constructor(type: Class<T>) : super(type)
 
     @Throws(IOException::class)
