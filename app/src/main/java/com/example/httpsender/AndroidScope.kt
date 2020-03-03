@@ -12,7 +12,6 @@ import kotlinx.coroutines.*
  */
 open class AndroidScope() {
 
-
     constructor(
         lifecycleOwner: LifecycleOwner,
         lifeEvent: Lifecycle.Event = Lifecycle.Event.ON_DESTROY
@@ -21,44 +20,39 @@ open class AndroidScope() {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (lifeEvent == event) {
                     onCancel()
+                    lifecycleOwner.lifecycle.removeObserver(this)
                 }
             }
         })
     }
 
-    private val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
+    //协程异常回调
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         catch(throwable)
     }
 
     private val coroutineScope = CoroutineScope(
         Dispatchers.Main + exceptionHandler + SupervisorJob())
 
-    protected open fun catch(e: Throwable) {
-        onError?.invoke(e)
-    }
-
     private var onError: ((Throwable) -> Unit)? = null
 
     private var job: Job? = null
 
     fun launch(
-        start: CoroutineStart = CoroutineStart.DEFAULT,
-        block: suspend CoroutineScope.() -> Unit
+        block: suspend CoroutineScope.() -> Unit,
+        error: (Throwable) -> Unit
     ): Job {
-        val job = coroutineScope.launch(start = start) {
-            block()
-        }
+        onError = error
+        val job = coroutineScope.launch { block() }
         this.job = job
         return job
     }
 
-    fun onError(error: (Throwable) -> Unit): AndroidScope {
-        onError = error
-        return this
+    private fun onCancel() {
+        job?.cancel()
     }
 
-    fun onCancel() {
-        job?.cancel()
-
+    private fun catch(e: Throwable) {
+        onError?.invoke(e)
     }
 }
