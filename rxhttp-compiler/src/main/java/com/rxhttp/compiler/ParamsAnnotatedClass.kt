@@ -223,12 +223,23 @@ class ParamsAnnotatedClass {
 
         val endIndexParam = ParameterSpec.builder("endIndex", Long::class)
             .defaultValue("-1L").build()
+
+        val connectLastProgress = ParameterSpec.builder("connectLastProgress", Boolean::class)
+            .defaultValue("false").build()
         methodList.add(
             FunSpec.builder("setRangeHeader")
                 .addAnnotation(JvmOverloads::class)
+                .addKdoc("""
+                    设置断点下载开始/结束位置                                      
+                    @param startIndex 断点下载开始位置                         
+                    @param endIndex 断点下载结束位置，默认为-1，即默认结束位置为文件末尾        
+                    @param connectLastProgress 是否衔接上次的下载进度，仅在带进度断点下载时有效
+                """.trimIndent())
                 .addParameter("startIndex", Long::class)
                 .addParameter(endIndexParam)
+                .addParameter(connectLastProgress)
                 .addStatement("param.setRangeHeader(startIndex, endIndex)")
+                .addStatement("if (connectLastProgress) breakDownloadOffSize = startIndex")
                 .addStatement("return this as R")
                 .returns(rxHttp)
                 .build())

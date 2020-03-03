@@ -44,7 +44,7 @@ suspend fun <T : Any> Call.await(parser: Parser<T>): T {
             override fun onResponse(call: Call, response: Response) {
                 try {
                     continuation.resume(parser.onParse(response))
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     continuation.resumeWithException(e)
                 }
             }
@@ -91,10 +91,9 @@ suspend fun <T : Any> IRxHttp.await(parser: Parser<T>) = newCall().await(parser)
 suspend fun IRxHttp.awaitDownload(
     destPath: String,
     coroutine: CoroutineScope? = null,
-    offsetSize: Long = 0L,
     progress: (Progress<String>) -> Unit
 ): String {
-    val clone = HttpSender.clone(ProgressCallbackImpl(coroutine, offsetSize, progress))
+    val clone = HttpSender.clone(ProgressCallbackImpl(coroutine, breakDownloadOffSize, progress))
     return newCall(clone).await(DownloadParser(destPath))
 }
 

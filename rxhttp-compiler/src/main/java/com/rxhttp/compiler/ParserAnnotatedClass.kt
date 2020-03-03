@@ -403,32 +403,35 @@ class ParserAnnotatedClass {
                 .addStatement("return asParser(%T(destPath))", downloadParserName)
                 .build())
 
-        funList.add(
-            FunSpec.builder("asDownload")
-                .addParameter("destPath", String::class)
-                .addParameter("progressConsumer", consumerProgressStringName)
-                .addParameter("observeOnScheduler", schedulerName)
-                .addStatement("return asDownload(destPath, 0, progressConsumer, observeOnScheduler)")
-                .build())
-
-        val offsetSize = ParameterSpec.builder("offsetSize", Long::class)
-            .defaultValue("0L")
-            .build()
         val observeOnScheduler = ParameterSpec.builder("observeOnScheduler", schedulerName.copy(nullable = true))
             .defaultValue("null")
             .build()
+
+        val progressTLambdaName = LambdaTypeName.get(parameters = *arrayOf(progressStringName),
+            returnType = Unit::class.asClassName())
 
         funList.add(
             FunSpec.builder("asDownload")
                 .addAnnotation(JvmOverloads::class)
                 .addParameter("destPath", String::class)
-                .addParameter(offsetSize)
+                .addParameter(observeOnScheduler)
+                .addParameter("progress", progressTLambdaName)
+                .addCode("""
+                    return asDownload(destPath, Consumer { progress(it) }, observeOnScheduler)                                                          
+                """.trimIndent())
+                .returns(observableStringName)
+                .build())
+
+        funList.add(
+            FunSpec.builder("asDownload")
+                .addAnnotation(JvmOverloads::class)
+                .addParameter("destPath", String::class)
                 .addParameter("progressConsumer", consumerProgressStringName)
                 .addParameter(observeOnScheduler)
                 .addCode("""
                     setConverter(param)                                                                    
                     var observable = HttpSender                                                            
-                        .downloadProgress(addDefaultDomainIfAbsent(param), destPath, offsetSize, scheduler)
+                        .downloadProgress(addDefaultDomainIfAbsent(param), destPath, breakDownloadOffSize, scheduler)
                     if (observeOnScheduler != null) {                                                      
                         observable = observable.observeOn(observeOnScheduler)                              
                     }                                                                                      

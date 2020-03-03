@@ -199,6 +199,12 @@ class RxHttpGenerator {
             .initializer("%T.getConverter()", rxHttpPluginsName)
             .build()
 
+        val downloadProgressOffSize = PropertySpec.builder("breakDownloadOffSize", Long::class, KModifier.OVERRIDE)
+            .addKdoc("断点下载进度偏移量，如果需要衔接上次下载进度，则需要通过 [setRangeHeader] 设置该值")
+            .mutable()
+            .initializer("0L")
+            .build()
+
         val suppressAnno = AnnotationSpec.builder(Suppress::class)
             .addMember("\"UNCHECKED_CAST\"")
             .build()
@@ -223,6 +229,7 @@ class RxHttpGenerator {
                 .build())
             .addProperty(schedulerField)
             .addProperty(converterSpec)
+            .addProperty(downloadProgressOffSize)
             .addTypeVariable(p) //添加泛型
             .addTypeVariable(r)
             .addType(companionType) //添加伴生对象

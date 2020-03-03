@@ -210,10 +210,12 @@ class MainActivity : AppCompatActivity() {
 
     //文件下载，带进度
     fun downloadAndProgress(view: View) { //文件存储路径
-        val destPath = externalCacheDir.toString() + "/" + System.currentTimeMillis() + ".apk"
+        val destPath = "$externalCacheDir/Miaobo.apk"
+        val length = File(destPath).length()
         AndroidScope(this).launch({
             val result = get("/miaolive/Miaolive.apk")
                 .setDomainToUpdateIfAbsent() //使用指定的域名
+                .setRangeHeader(length, -1, true)
                 .awaitDownload(destPath, this) {
                     //下载进度回调,0-100，仅在进度有更新时才会回调，最多回调101次，最后一次回调文件存储路径
                     val currentProgress = it.progress //当前进度 0-100
@@ -252,15 +254,15 @@ class MainActivity : AppCompatActivity() {
         val length = File(destPath).length()
         get("/miaolive/Miaolive.apk")
             .setDomainToUpdateIfAbsent() //使用指定的域名
-            .setRangeHeader(length) //设置开始下载位置，结束位置默认为文件末尾
-            .asDownload(destPath, length, Consumer {
-                //如果需要衔接上次的下载进度，则需要传入上次已下载的字节数length
+            .setRangeHeader(length, connectLastProgress = true) //设置开始下载位置，结束位置默认为文件末尾
+            .asDownload(destPath, AndroidSchedulers.mainThread()) {
+                //指定回调(进度/成功/失败)线程,不指定,默认在请求所在线程回调
                 //下载进度回调,0-100，仅在进度有更新时才会回调
                 val currentProgress = it.progress //当前进度 0-100
                 val currentSize = it.currentSize //当前已下载的字节大小
                 val totalSize = it.totalSize //要下载的总字节大小
                 mBinding.tvResult.append("\n" + it.toString())
-            }, AndroidSchedulers.mainThread()) //指定回调(进度/成功/失败)线程,不指定,默认在请求所在线程回调
+            }
             .life(this) //加入感知生命周期的观察者
             .subscribe({
                 //下载成功
