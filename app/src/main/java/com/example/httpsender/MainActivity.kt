@@ -18,6 +18,7 @@ import com.rxjava.rxlife.life
 import com.rxjava.rxlife.lifeOnMain
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
+import rxhttp.awaitDownload
 import rxhttp.wrapper.entity.Progress
 import rxhttp.wrapper.param.RxHttp.Companion.get
 import rxhttp.wrapper.param.RxHttp.Companion.postForm
@@ -210,24 +211,22 @@ class MainActivity : AppCompatActivity() {
     //文件下载，带进度
     fun downloadAndProgress(view: View) { //文件存储路径
         val destPath = externalCacheDir.toString() + "/" + System.currentTimeMillis() + ".apk"
-        get("/miaolive/Miaolive.apk")
-            .setDomainToUpdateIfAbsent() //使用指定的域名
-            .asDownload(destPath, Consumer { progress: Progress<String> ->
-                //下载进度回调,0-100，仅在进度有更新时才会回调，最多回调101次，最后一次回调文件存储路径
-                val currentProgress = progress.progress //当前进度 0-100
-                val currentSize = progress.currentSize //当前已下载的字节大小
-                val totalSize = progress.totalSize //要下载的总字节大小
-                mBinding.tvResult.append("\n" + progress.toString())
-            }, AndroidSchedulers.mainThread()) //指定回调(进度/成功/失败)线程,不指定,默认在请求所在线程回调
-            .life(this) //感知生命周期
-            .subscribe({
-                //下载完成，处理相关逻辑
-                mBinding.tvResult.append("\n下载成功 : $it")
-            }, {
-                mBinding.tvResult.append("\n" + it.errorMsg())
-                //下载失败，处理相关逻辑
-                it.show("下载失败,请稍后再试!")
-            })
+        AndroidScope(this).launch({
+            val result = get("/miaolive/Miaolive.apk")
+                .setDomainToUpdateIfAbsent() //使用指定的域名
+                .awaitDownload(destPath, this) {
+                    //下载进度回调,0-100，仅在进度有更新时才会回调，最多回调101次，最后一次回调文件存储路径
+                    val currentProgress = it.progress //当前进度 0-100
+                    val currentSize = it.currentSize //当前已下载的字节大小
+                    val totalSize = it.totalSize //要下载的总字节大小
+                    mBinding.tvResult.append("\n" + it.toString())
+                }
+            mBinding.tvResult.append("\n" + result)
+        }, {
+            mBinding.tvResult.append("\n" + it.errorMsg())
+            //下载失败，处理相关逻辑
+            it.show("下载失败,请稍后再试!")
+        })
     }
 
     //断点下载

@@ -137,107 +137,109 @@ class ParserAnnotatedClass {
 
         funList.add(
             FunSpec.builder("newCall")
+                .addModifiers(KModifier.OVERRIDE)
                 .addStatement("return newCall(getOkHttpClient())")
                 .returns(callName)
                 .build())
 
         funList.add(
             FunSpec.builder("newCall")
+                .addModifiers(KModifier.OVERRIDE)
                 .addParameter("okHttp", okHttpClientName)
                 .addStatement("setConverter(param)")
                 .addStatement("return %T.newCall(okHttp, addDefaultDomainIfAbsent(param))", httpSenderName)
                 .returns(callName)
                 .build())
 
-        funList.add(
-            FunSpec.builder("awaitBoolean")
-                .addModifiers(KModifier.SUSPEND)
-                .addStatement("return await<Boolean>()")
-                .build())
-
-        funList.add(
-            FunSpec.builder("awaitByte")
-                .addModifiers(KModifier.SUSPEND)
-                .addStatement("return await<Byte>()")
-                .build())
-
-        funList.add(
-            FunSpec.builder("awaitShort")
-                .addModifiers(KModifier.SUSPEND)
-                .addStatement("return await<Short>()")
-                .build())
-
-        funList.add(
-            FunSpec.builder("awaitInt")
-                .addModifiers(KModifier.SUSPEND)
-                .addStatement("return await<Int>()")
-                .build())
-
-        funList.add(
-            FunSpec.builder("awaitLong")
-                .addModifiers(KModifier.SUSPEND)
-                .addStatement("return await<Long>()")
-                .build())
-
-        funList.add(
-            FunSpec.builder("awaitFloat")
-                .addModifiers(KModifier.SUSPEND)
-                .addStatement("return await<Float>()")
-                .build())
-        funList.add(
-            FunSpec.builder("awaitDouble")
-                .addModifiers(KModifier.SUSPEND)
-                .addStatement("return await<Double>()")
-                .build())
-
-        funList.add(
-            FunSpec.builder("awaitString")
-                .addModifiers(KModifier.SUSPEND)
-                .addStatement("return await<String>()")
-                .build())
-
-        funList.add(
-            FunSpec.builder("await")
-                .addModifiers(KModifier.SUSPEND, KModifier.INLINE)
-                .addTypeVariable(anyT.copy(reified = true))
-                .addStatement("return await(object: SimpleParser<T>() {})")
-                .build())
-
-        funList.add(
-            FunSpec.builder("awaitList")
-                .addModifiers(KModifier.SUSPEND, KModifier.INLINE)
-                .addTypeVariable(anyT.copy(reified = true))
-                .addStatement("return await(object: ListParser<T>() {})")
-                .build())
-
-        funList.add(
-            FunSpec.builder("awaitMap")
-                .addModifiers(KModifier.SUSPEND, KModifier.INLINE)
-                .addTypeVariable(anyK.copy(reified = true))
-                .addTypeVariable(anyV.copy(reified = true))
-                .addStatement("return await(object: MapParser<K,V>() {})")
-                .build())
-
-        funList.add(
-            FunSpec.builder("awaitHeaders")
-                .addModifiers(KModifier.SUSPEND)
-                .addStatement("return awaitOkResponse().headers()")
-                .build())
-
-        funList.add(
-            FunSpec.builder("awaitOkResponse")
-                .addModifiers(KModifier.SUSPEND)
-                .addStatement("return await(OkResponseParser())")
-                .build())
-
-        funList.add(
-            FunSpec.builder("await")
-                .addKdoc("所有的awaitXxx方法,最终都会调用本方法\n")
-                .addModifiers(KModifier.SUSPEND)
-                .addTypeVariable(anyT)
-                .addParameter("parser", parserTName)
-                .addStatement("return newCall().%T(parser)", awaitName)
-                .build())
+//        funList.add(
+//            FunSpec.builder("awaitBoolean")
+//                .addModifiers(KModifier.SUSPEND)
+//                .addStatement("return await<Boolean>()")
+//                .build())
+//
+//        funList.add(
+//            FunSpec.builder("awaitByte")
+//                .addModifiers(KModifier.SUSPEND)
+//                .addStatement("return await<Byte>()")
+//                .build())
+//
+//        funList.add(
+//            FunSpec.builder("awaitShort")
+//                .addModifiers(KModifier.SUSPEND)
+//                .addStatement("return await<Short>()")
+//                .build())
+//
+//        funList.add(
+//            FunSpec.builder("awaitInt")
+//                .addModifiers(KModifier.SUSPEND)
+//                .addStatement("return await<Int>()")
+//                .build())
+//
+//        funList.add(
+//            FunSpec.builder("awaitLong")
+//                .addModifiers(KModifier.SUSPEND)
+//                .addStatement("return await<Long>()")
+//                .build())
+//
+//        funList.add(
+//            FunSpec.builder("awaitFloat")
+//                .addModifiers(KModifier.SUSPEND)
+//                .addStatement("return await<Float>()")
+//                .build())
+//        funList.add(
+//            FunSpec.builder("awaitDouble")
+//                .addModifiers(KModifier.SUSPEND)
+//                .addStatement("return await<Double>()")
+//                .build())
+//
+//        funList.add(
+//            FunSpec.builder("awaitString")
+//                .addModifiers(KModifier.SUSPEND)
+//                .addStatement("return await<String>()")
+//                .build())
+//
+//        funList.add(
+//            FunSpec.builder("await")
+//                .addModifiers(KModifier.SUSPEND, KModifier.INLINE)
+//                .addTypeVariable(anyT.copy(reified = true))
+//                .addStatement("return await(object: SimpleParser<T>() {})")
+//                .build())
+//
+//        funList.add(
+//            FunSpec.builder("awaitList")
+//                .addModifiers(KModifier.SUSPEND, KModifier.INLINE)
+//                .addTypeVariable(anyT.copy(reified = true))
+//                .addStatement("return await(object: ListParser<T>() {})")
+//                .build())
+//
+//        funList.add(
+//            FunSpec.builder("awaitMap")
+//                .addModifiers(KModifier.SUSPEND, KModifier.INLINE)
+//                .addTypeVariable(anyK.copy(reified = true))
+//                .addTypeVariable(anyV.copy(reified = true))
+//                .addStatement("return await(object: MapParser<K,V>() {})")
+//                .build())
+//
+//        funList.add(
+//            FunSpec.builder("awaitHeaders")
+//                .addModifiers(KModifier.SUSPEND)
+//                .addStatement("return awaitOkResponse().headers()")
+//                .build())
+//
+//        funList.add(
+//            FunSpec.builder("awaitOkResponse")
+//                .addModifiers(KModifier.SUSPEND)
+//                .addStatement("return await(OkResponseParser())")
+//                .build())
+//
+//        funList.add(
+//            FunSpec.builder("await")
+//                .addKdoc("所有的awaitXxx方法,最终都会调用本方法\n")
+//                .addModifiers(KModifier.SUSPEND)
+//                .addTypeVariable(anyT)
+//                .addParameter("parser", parserTName)
+//                .addStatement("return newCall().%T(parser)", awaitName)
+//                .build())
 
         awaitEndIndex = funList.size
 
@@ -245,7 +247,7 @@ class ParserAnnotatedClass {
             funList.add(
                 FunSpec.builder("awaitBitmap")
                     .addModifiers(KModifier.SUSPEND)
-                    .addStatement("return await(BitmapParser())")
+                    .addStatement("return %T(BitmapParser())", awaitName)
                     .build())
 
             funList.add(

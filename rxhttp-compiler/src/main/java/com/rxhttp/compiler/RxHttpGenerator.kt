@@ -211,6 +211,7 @@ class RxHttpGenerator {
                 "\nhttps://github.com/liujingxing/RxHttp" +
                 "\nhttps://github.com/liujingxing/RxLife\n")
             .addModifiers(KModifier.OPEN)
+            .addSuperinterface(ClassName("rxhttp", "IRxHttp"))
             .addAnnotation(suppressAnno)
             .primaryConstructor(FunSpec.constructorBuilder() //添加构造方法
                 .addModifiers(KModifier.PROTECTED)
@@ -587,7 +588,7 @@ class RxHttpGenerator {
                         val p = Progress<T>(currentProgress, currentSize, totalSize)
                         coroutine?.%T { progress(p) } ?: progress(p)
                     })
-                    return newCall().%T(parser)
+                    return %T(parser)
                     """.trimIndent(), progressCallbackName, launchName, awaitName)
                 .returns(t)
                 .build())
