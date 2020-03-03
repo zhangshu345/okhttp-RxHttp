@@ -512,15 +512,19 @@ class RxHttpGenerator {
 
         methodList.add(
             FunSpec.builder("asUpload")
-                .addParameter("progressConsumer", consumerProgressStringName)
-                .addStatement("return asUpload(%T(String::class.java), progressConsumer, null)", simpleParserName)
+                .addModifiers(KModifier.INLINE)
+                .addTypeVariable(anyT.copy(reified = true))
+                .addParameter("progress", consumerProgressTName)
+                .addStatement("return asUpload(object: %T<T>() {}, progress, null)", simpleParserName)
                 .build())
 
         methodList.add(
             FunSpec.builder("asUpload")
-                .addParameter("progressConsumer", consumerProgressStringName)
+                .addModifiers(KModifier.INLINE)
+                .addTypeVariable(anyT.copy(reified = true))
+                .addParameter("progress", consumerProgressTName)
                 .addParameter("observeOnScheduler", schedulerName)
-                .addStatement("return asUpload(%T(String::class.java), progressConsumer, observeOnScheduler)", simpleParserName)
+                .addStatement("return asUpload(object: %T<T>() {}, progress, observeOnScheduler)", simpleParserName)
                 .build())
 
         val parser = ParameterSpec.builder("parser", parserTName)
@@ -535,7 +539,7 @@ class RxHttpGenerator {
                 .addAnnotation(JvmOverloads::class)
                 .addTypeVariable(anyT)
                 .addParameter(parser)
-                .addParameter("progressConsumer", consumerProgressTName)
+                .addParameter("progress", consumerProgressTName)
                 .addParameter(observeOnScheduler)
                 .addCode("""
                     setConverter(param)                                                    
@@ -544,7 +548,7 @@ class RxHttpGenerator {
                     if (observeOnScheduler != null) {                                      
                         observable = observable.observeOn(observeOnScheduler)              
                     }                                                                      
-                    return observable.doOnNext(progressConsumer)                           
+                    return observable.doOnNext(progress)                           
                         .filter { it.isFinish }                                         
                         .map { it.result }                                                 
                 """.trimIndent(), httpSenderName)
@@ -563,10 +567,10 @@ class RxHttpGenerator {
 
         methodList.add(
             FunSpec.builder("awaitUpload")
-                .addModifiers(KModifier.SUSPEND)
-                .addTypeVariable(anyT)
+                .addModifiers(KModifier.SUSPEND, KModifier.INLINE)
+                .addTypeVariable(anyT.copy(reified = true))
                 .addParameter(coroutine)
-                .addParameter("progress", progressTLambdaName)
+                .addParameter("progress", progressTLambdaName, KModifier.NOINLINE)
                 .addStatement("return awaitUpload(object: SimpleParser<T>() {}, coroutine, progress)")
                 .returns(t)
                 .build())

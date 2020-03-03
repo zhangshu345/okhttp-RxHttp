@@ -24,7 +24,6 @@ import rxhttp.wrapper.param.RxHttp.Companion.postForm
 import rxhttp.wrapper.param.RxHttp.Companion.postJson
 import rxhttp.wrapper.param.RxHttp.Companion.postJsonArray
 import java.io.File
-import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mBinding: MainActivityBinding
@@ -51,15 +50,14 @@ class MainActivity : AppCompatActivity() {
     //发送Get请求，获取文章列表
     fun sendGet(view: View) {
         AndroidScope(this)
-            .onError {
+            .launch({
+                val pageList = get("/article/list/0/json").awaitResponse<String>()
+                mBinding.tvResult.text = Gson().toJson(pageList)
+            }, {
                 mBinding.tvResult.text = it.errorMsg()
                 //失败回调
                 it.show("发送失败,请稍后再试!")
-            }.launch {
-                val pageList = get("/article/list/0/json")
-                    .awaitResponsePageList(Article::class)
-                mBinding.tvResult.text = Gson().toJson(pageList)
-            }
+            })
 
     }
 
@@ -68,7 +66,7 @@ class MainActivity : AppCompatActivity() {
 
         postForm("/article/query/0/json")
             .add("k", null)
-            .asResponsePageList(Article::class)
+            .asResponsePageList<Article>()
             .lifeOnMain(this) //感知生命周期，并在主线程回调
             .subscribe({
                 mBinding.tvResult.text = Gson().toJson(it)
@@ -168,7 +166,7 @@ class MainActivity : AppCompatActivity() {
     fun xmlConverter(view: View) {
         get("http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=sf-muni")
             .setXmlConverter()
-            .asObject(NewsDataXml::class)
+            .asObject<NewsDataXml>()
             .lifeOnMain(this) //感知生命周期，并在主线程回调
             .subscribe({
                 mBinding.tvResult.text = Gson().toJson(it)
@@ -183,7 +181,7 @@ class MainActivity : AppCompatActivity() {
     fun fastJsonConverter(view: View) {
         get("/article/list/0/json")
             .setFastJsonConverter()
-            .asResponsePageList(Article::class)
+            .asResponsePageList<Article>()
             .lifeOnMain(this) //感知生命周期，并在主线程回调
             .subscribe({
                 mBinding.tvResult.text = Gson().toJson(it)
@@ -256,13 +254,13 @@ class MainActivity : AppCompatActivity() {
         get("/miaolive/Miaolive.apk")
             .setDomainToUpdateIfAbsent() //使用指定的域名
             .setRangeHeader(length) //设置开始下载位置，结束位置默认为文件末尾
-            .asDownload(destPath, length, Consumer { progress: Progress<String> ->
+            .asDownload(destPath, length, Consumer {
                 //如果需要衔接上次的下载进度，则需要传入上次已下载的字节数length
                 //下载进度回调,0-100，仅在进度有更新时才会回调
-                val currentProgress = progress.progress //当前进度 0-100
-                val currentSize = progress.currentSize //当前已下载的字节大小
-                val totalSize = progress.totalSize //要下载的总字节大小
-                mBinding.tvResult.append("\n" + progress.toString())
+                val currentProgress = it.progress //当前进度 0-100
+                val currentSize = it.currentSize //当前已下载的字节大小
+                val totalSize = it.totalSize //要下载的总字节大小
+                mBinding.tvResult.append("\n" + it.toString())
             }, AndroidSchedulers.mainThread()) //指定回调(进度/成功/失败)线程,不指定,默认在请求所在线程回调
             .life(this) //加入感知生命周期的观察者
             .subscribe({
