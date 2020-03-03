@@ -550,6 +550,45 @@ class RxHttpGenerator {
                 """.trimIndent(), httpSenderName)
                 .returns(observableTName)
                 .build())
+
+        val coroutineScopeName = ClassName("kotlinx.coroutines", "CoroutineScope").copy(nullable = true)
+        val coroutine = ParameterSpec.builder("coroutine", coroutineScopeName)
+            .defaultValue("null")
+            .build()
+        val progressCallbackName = ClassName("rxhttp.wrapper.callback", "ProgressCallback")
+        val awaitName = ClassName("rxhttp", "await")
+        val launchName = ClassName("kotlinx.coroutines", "launch")
+        val progressTLambdaName = LambdaTypeName.get(parameters = *arrayOf(progressTName),
+            returnType = Unit::class.asClassName())
+
+        methodList.add(
+            FunSpec.builder("awaitUpload")
+                .addModifiers(KModifier.SUSPEND)
+                .addTypeVariable(anyT)
+                .addParameter(coroutine)
+                .addParameter("progress", progressTLambdaName)
+                .addStatement("return awaitUpload(object: SimpleParser<T>() {}, coroutine, progress)")
+                .returns(t)
+                .build())
+
+        methodList.add(
+            FunSpec.builder("awaitUpload")
+                .addModifiers(KModifier.SUSPEND)
+                .addTypeVariable(anyT)
+                .addParameter(parser)
+                .addParameter(coroutine)
+                .addParameter("progress", progressTLambdaName)
+                .addCode("""
+                    param.setProgressCallback(%T { currentProgress, currentSize, totalSize ->
+                        val p = Progress<T>(currentProgress, currentSize, totalSize)
+                        coroutine?.%T { progress(p) } ?: progress(p)
+                    })
+                    return newCall().%T(parser)
+                    """.trimIndent(), progressCallbackName, launchName, awaitName)
+                .returns(t)
+                .build())
+
+
         val rxHttpFormSpec = TypeSpec.classBuilder("RxHttp_FormParam")
             .addKdoc("Github" +
                 "\nhttps://github.com/liujingxing/RxHttp" +
