@@ -51,7 +51,7 @@ dependencies {
 
 - 新增一系列`suspend <T> awaitXxx(): T` 方法，用于对协程的支持，通过该系列方法，可直接拿到http返回值
 
-- 新增：对于之前要传`Classs<T>`参数的asXxx方法，新增了与之对应同名的无参方法，如：`T asObject<T>()`
+- 新增：对于之前要传`Class<T>`参数的asXxx方法，新增了与之对应同名的无参方法，如：`T asObject<T>()`
 
 - 修改`setRangeHeader(long,long)`方法签名为`setRangeHeader(long,long,boolean)`，其中第三个参数代表在带进度断点下载时，是否需要衔接上次的下载进度，默认为false
 
