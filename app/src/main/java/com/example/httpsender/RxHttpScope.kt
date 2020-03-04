@@ -10,7 +10,7 @@ import kotlinx.coroutines.*
  * Date: 2020-02-05
  * Time: 20:30
  */
-open class AndroidScope() {
+open class RxHttpScope() {
 
     constructor(
         lifecycleOwner: LifecycleOwner,

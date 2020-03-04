@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
 
     //发送Get请求，获取文章列表
     fun sendGet(view: View) {
-        AndroidScope(this)
+        RxHttpScope(this)
             .launch({
                 val pageList = get("/article/list/0/json").awaitResponse<String>()
                 mBinding.tvResult.text = Gson().toJson(pageList)
@@ -212,7 +212,7 @@ class MainActivity : AppCompatActivity() {
     fun downloadAndProgress(view: View) { //文件存储路径
         val destPath = "$externalCacheDir/Miaobo.apk"
         val length = File(destPath).length()
-        AndroidScope(this).launch({
+        RxHttpScope(this).launch({
             val result = get("/miaolive/Miaolive.apk")
                 .setDomainToUpdateIfAbsent() //使用指定的域名
                 .setRangeHeader(length, -1, true)
