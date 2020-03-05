@@ -6,6 +6,7 @@ import rxhttp.wrapper.utils.CacheUtil
 import rxhttp.wrapper.utils.GsonUtil
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 /**
  * post、put、patch、delete请求，参数以{application/json; charset=utf-8}形式提交
@@ -36,8 +37,7 @@ class JsonArrayParam(url: String, method: Method) : AbstractParam<JsonArrayParam
     }
 
     override fun add(key: String, value: Any?): JsonArrayParam {
-        val map = HashMap<String, Any>()
-        map[key] = value ?: ""
+        val map = HashMap<String, Any?>().apply { this[key] = value }
         return add(map)
     }
 
