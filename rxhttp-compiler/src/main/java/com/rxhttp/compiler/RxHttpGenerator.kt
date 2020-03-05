@@ -77,13 +77,13 @@ class RxHttpGenerator {
         val subString = WildcardTypeName.producerOf(stringName)
         val mapName = MutableMap::class.asClassName().parameterizedBy(subString, TypeVariableName("*"))
         val noBodyParamName = ClassName(packageName, "NoBodyParam")
-        val rxHttpNoBodyName = ClassName(packageName, "RxHttp_NoBodyParam")
+        val rxHttpNoBodyName = ClassName(packageName, "RxHttpNoBodyParam")
         val formParamName = ClassName(packageName, "FormParam")
-        val rxHttpFormName = ClassName(packageName, "RxHttp_FormParam")
+        val rxHttpFormName = ClassName(packageName, "RxHttpFormParam")
         val jsonParamName = ClassName(packageName, "JsonParam")
-        val rxHttpJsonName = ClassName(packageName, "RxHttp_JsonParam")
+        val rxHttpJsonName = ClassName(packageName, "RxHttpJsonParam")
         val jsonArrayParamName = ClassName(packageName, "JsonArrayParam")
-        val rxHttpJsonArrayName = ClassName(packageName, "RxHttp_JsonArrayParam")
+        val rxHttpJsonArrayName = ClassName(packageName, "RxHttpJsonArrayParam")
         val rxHttpNoBody = RXHTTP.parameterizedBy(noBodyParamName, rxHttpNoBodyName)
         val rxHttpForm = RXHTTP.parameterizedBy(formParamName, rxHttpFormName)
         val rxHttpJson = RXHTTP.parameterizedBy(jsonParamName, rxHttpJsonName)
@@ -240,7 +240,7 @@ class RxHttpGenerator {
             .addType(rxHttp)
             .build().writeTo(filer!!)
 
-        //创建RxHttp_NoBodyParam类
+        //创建RxHttpNoBodyParam类
         methodList.clear()
 
         methodList.add(
@@ -326,7 +326,7 @@ class RxHttpGenerator {
                 .addStatement("return param.queryValues(key)")
                 .returns(listObjectName)
                 .build())
-        val rxHttpNoBodySpec = TypeSpec.classBuilder("RxHttp_NoBodyParam")
+        val rxHttpNoBodySpec = TypeSpec.classBuilder("RxHttpNoBodyParam")
             .addKdoc("Github" +
                 "\nhttps://github.com/liujingxing/RxHttp" +
                 "\nhttps://github.com/liujingxing/RxLife\n")
@@ -334,12 +334,12 @@ class RxHttpGenerator {
             .superclass(rxHttpNoBody)
             .addFunctions(methodList)
             .build()
-        FileSpec.builder(packageName, "RxHttp_NoBodyParam")
+        FileSpec.builder(packageName, "RxHttpNoBodyParam")
             .addType(rxHttpNoBodySpec)
             .build().writeTo(filer)
 
 
-        //创建RxHttp_FormParam类
+        //创建RxHttpFormParam类
         methodList.clear()
 
         methodList.add(
@@ -601,7 +601,7 @@ class RxHttpGenerator {
                 .build())
 
 
-        val rxHttpFormSpec = TypeSpec.classBuilder("RxHttp_FormParam")
+        val rxHttpFormSpec = TypeSpec.classBuilder("RxHttpFormParam")
             .addKdoc("Github" +
                 "\nhttps://github.com/liujingxing/RxHttp" +
                 "\nhttps://github.com/liujingxing/RxLife\n")
@@ -609,11 +609,11 @@ class RxHttpGenerator {
             .superclass(rxHttpForm)
             .addFunctions(methodList)
             .build()
-        FileSpec.builder(packageName, "RxHttp_FormParam")
+        FileSpec.builder(packageName, "RxHttpFormParam")
             .addType(rxHttpFormSpec)
             .build().writeTo(filer)
 
-        //创建RxHttp_JsonParam类
+        //创建RxHttpJsonParam类
         methodList.clear()
 
         methodList.add(
@@ -669,7 +669,7 @@ class RxHttpGenerator {
                 .addStatement("return this")
                 .returns(rxHttpJsonName)
                 .build())
-        val rxHttpJsonSpec = TypeSpec.classBuilder("RxHttp_JsonParam")
+        val rxHttpJsonSpec = TypeSpec.classBuilder("RxHttpJsonParam")
             .addKdoc("Github" +
                 "\nhttps://github.com/liujingxing/RxHttp" +
                 "\nhttps://github.com/liujingxing/RxLife\n")
@@ -677,11 +677,11 @@ class RxHttpGenerator {
             .superclass(rxHttpJson)
             .addFunctions(methodList)
             .build()
-        FileSpec.builder(packageName, "RxHttp_JsonParam")
+        FileSpec.builder(packageName, "RxHttpJsonParam")
             .addType(rxHttpJsonSpec)
             .build().writeTo(filer)
 
-        //创建RxHttp_JsonArrayParam类
+        //创建RxHttpJsonArrayParam类
         methodList.clear()
 
         methodList.add(
@@ -768,7 +768,7 @@ class RxHttpGenerator {
                 .addStatement("return this")
                 .returns(rxHttpJsonArrayName)
                 .build())
-        val rxHttpJsonArraySpec = TypeSpec.classBuilder("RxHttp_JsonArrayParam")
+        val rxHttpJsonArraySpec = TypeSpec.classBuilder("RxHttpJsonArrayParam")
             .addKdoc("Github" +
                 "\nhttps://github.com/liujingxing/RxHttp" +
                 "\nhttps://github.com/liujingxing/RxLife\n")
@@ -776,7 +776,7 @@ class RxHttpGenerator {
             .superclass(rxHttpJsonArray)
             .addFunctions(methodList)
             .build()
-        FileSpec.builder(packageName, "RxHttp_JsonArrayParam")
+        FileSpec.builder(packageName, "RxHttpJsonArrayParam")
             .addType(rxHttpJsonArraySpec)
             .build().writeTo(filer)
     }

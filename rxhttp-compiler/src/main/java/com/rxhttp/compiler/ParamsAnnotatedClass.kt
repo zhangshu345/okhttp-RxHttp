@@ -44,20 +44,20 @@ class ParamsAnnotatedClass {
         val classTName = Class::class.asClassName().parameterizedBy(superT)
         val methodList = ArrayList<FunSpec>()
         val methodMap = LinkedHashMap<String, String>()
-        methodMap["get"] = "RxHttp_NoBodyParam"
-        methodMap["head"] = "RxHttp_NoBodyParam"
-        methodMap["postForm"] = "RxHttp_FormParam"
-        methodMap["putForm"] = "RxHttp_FormParam"
-        methodMap["patchForm"] = "RxHttp_FormParam"
-        methodMap["deleteForm"] = "RxHttp_FormParam"
-        methodMap["postJson"] = "RxHttp_JsonParam"
-        methodMap["putJson"] = "RxHttp_JsonParam"
-        methodMap["patchJson"] = "RxHttp_JsonParam"
-        methodMap["deleteJson"] = "RxHttp_JsonParam"
-        methodMap["postJsonArray"] = "RxHttp_JsonArrayParam"
-        methodMap["putJsonArray"] = "RxHttp_JsonArrayParam"
-        methodMap["patchJsonArray"] = "RxHttp_JsonArrayParam"
-        methodMap["deleteJsonArray"] = "RxHttp_JsonArrayParam"
+        methodMap["get"] = "RxHttpNoBodyParam"
+        methodMap["head"] = "RxHttpNoBodyParam"
+        methodMap["postForm"] = "RxHttpFormParam"
+        methodMap["putForm"] = "RxHttpFormParam"
+        methodMap["patchForm"] = "RxHttpFormParam"
+        methodMap["deleteForm"] = "RxHttpFormParam"
+        methodMap["postJson"] = "RxHttpJsonParam"
+        methodMap["putJson"] = "RxHttpJsonParam"
+        methodMap["patchJson"] = "RxHttpJsonParam"
+        methodMap["deleteJson"] = "RxHttpJsonParam"
+        methodMap["postJsonArray"] = "RxHttpJsonArrayParam"
+        methodMap["putJsonArray"] = "RxHttpJsonArrayParam"
+        methodMap["patchJsonArray"] = "RxHttpJsonArrayParam"
+        methodMap["deleteJsonArray"] = "RxHttpJsonArrayParam"
         var funBuilder: FunSpec.Builder
         for ((key, value) in methodMap) {
             companionFunList.add(
@@ -70,7 +70,7 @@ class ParamsAnnotatedClass {
         }
         for ((key, typeElement) in mElementMap) { //根据@Param注解，生成对应的方法及类
             val param = ClassName.bestGuess(typeElement.qualifiedName.toString())
-            val rxHttpName = "RxHttp_" + typeElement.simpleName
+            val rxHttpName = "RxHttp" + typeElement.simpleName
             val rxhttpParamName = ClassName(RxHttpGenerator.packageName, rxHttpName)
             companionFunList.add(
                 FunSpec.builder(key)
@@ -83,9 +83,9 @@ class ParamsAnnotatedClass {
             var rxhttpParam: TypeName
             var prefix = "(param as " + param.simpleName + ")."
             when (superclass.toString()) {
-                "rxhttp.wrapper.param.FormParam" -> rxhttpParam = ClassName(RxHttpGenerator.packageName, "RxHttp_FormParam")
-                "rxhttp.wrapper.param.JsonParam" -> rxhttpParam = ClassName(RxHttpGenerator.packageName, "RxHttp_JsonParam")
-                "rxhttp.wrapper.param.NoBodyParam" -> rxhttpParam = ClassName(RxHttpGenerator.packageName, "RxHttp_NoBodyParam")
+                "rxhttp.wrapper.param.FormParam" -> rxhttpParam = ClassName(RxHttpGenerator.packageName, "RxHttpFormParam")
+                "rxhttp.wrapper.param.JsonParam" -> rxhttpParam = ClassName(RxHttpGenerator.packageName, "RxHttpJsonParam")
+                "rxhttp.wrapper.param.NoBodyParam" -> rxhttpParam = ClassName(RxHttpGenerator.packageName, "RxHttpNoBodyParam")
                 else -> {
                     prefix = "param."
                     rxhttpParam = RxHttpGenerator.RXHTTP.parameterizedBy(param, rxhttpParamName)
@@ -160,25 +160,25 @@ class ParamsAnnotatedClass {
             FunSpec.builder("with")
                 .addAnnotation(JvmStatic::class)
                 .addParameter("noBodyParam", noBodyParamName)
-                .addStatement("return %L(noBodyParam)", "RxHttp_NoBodyParam")
+                .addStatement("return %L(noBodyParam)", "RxHttpNoBodyParam")
                 .build())
         companionFunList.add(
             FunSpec.builder("with")
                 .addAnnotation(JvmStatic::class)
                 .addParameter("formParam", formParamName)
-                .addStatement("return %L(formParam)", "RxHttp_FormParam")
+                .addStatement("return %L(formParam)", "RxHttpFormParam")
                 .build())
         companionFunList.add(
             FunSpec.builder("with")
                 .addAnnotation(JvmStatic::class)
                 .addParameter("jsonParam", jsonParamName)
-                .addStatement("return %L(jsonParam)", "RxHttp_JsonParam")
+                .addStatement("return %L(jsonParam)", "RxHttpJsonParam")
                 .build())
         companionFunList.add(
             FunSpec.builder("with")
                 .addAnnotation(JvmStatic::class)
                 .addParameter("jsonArrayParam", jsonArrayParamName)
-                .addStatement("return %L(jsonArrayParam)", "RxHttp_JsonArrayParam")
+                .addStatement("return %L(jsonArrayParam)", "RxHttpJsonArrayParam")
                 .build())
         methodList.add(
             FunSpec.builder("setUrl")

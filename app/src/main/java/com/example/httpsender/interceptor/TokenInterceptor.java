@@ -11,7 +11,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import rxhttp.wrapper.param.RxHttp;
-import rxhttp.wrapper.param.RxHttp_FormParam;
+import rxhttp.wrapper.param.RxHttpFormParam;
 import rxhttp.wrapper.parse.SimpleParser;
 
 /**
@@ -39,7 +39,7 @@ public class TokenInterceptor implements Interceptor {
 
     //处理token失效问题
     private Response handleTokenInvalid(Chain chain, Request request) throws IOException {
-        RxHttp_FormParam rxHttp = RxHttp.postForm(request.url().toString());  //2、根据自己的业务修改
+        RxHttpFormParam rxHttp = RxHttp.postForm(request.url().toString());  //2、根据自己的业务修改
         RequestBody body = request.body();
         if (body instanceof FormBody) {
             FormBody formBody = (FormBody) body;

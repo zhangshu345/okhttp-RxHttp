@@ -298,26 +298,18 @@ class ParserAnnotatedClass {
 
         funList.add(
             FunSpec.builder("asObject")
-                .addModifiers(KModifier.INLINE)
-                .addTypeVariable(anyT.copy(reified = true))
-                .addStatement("return asParser(object: %T<T>() {})", simpleParserName)
+                .addTypeVariable(anyT)
+                .addParameter("type", classTName)
+                .addStatement("return asParser(%T(type))", simpleParserName)
                 .build())
 
         funList.add(
             FunSpec.builder("asObject")
                 .addModifiers(KModifier.INLINE)
                 .addTypeVariable(anyT.copy(reified = true))
-                .addParameter("type", classTName)
-                .addStatement("return asParser(%T(type))", simpleParserName)
+                .addStatement("return asParser(object: %T<T>() {})", simpleParserName)
                 .build())
 
-        funList.add(
-            FunSpec.builder("asMap")
-                .addModifiers(KModifier.INLINE)
-                .addTypeVariable(anyK.copy(reified = true))
-                .addTypeVariable(anyV.copy(reified = true))
-                .addStatement("return asParser(object: %T<K,V>() {})", mapParserName)
-                .build())
 
         funList.add(
             FunSpec.builder("asMap")
@@ -336,10 +328,11 @@ class ParserAnnotatedClass {
                 .build())
 
         funList.add(
-            FunSpec.builder("asList")
+            FunSpec.builder("asMap")
                 .addModifiers(KModifier.INLINE)
-                .addTypeVariable(anyT.copy(reified = true))
-                .addStatement("return asParser(object: %T<T>() {})", listParserName)
+                .addTypeVariable(anyK.copy(reified = true))
+                .addTypeVariable(anyV.copy(reified = true))
+                .addStatement("return asParser(object: %T<K,V>() {})", mapParserName)
                 .build())
 
         funList.add(
@@ -347,6 +340,13 @@ class ParserAnnotatedClass {
                 .addTypeVariable(anyT)
                 .addParameter("type", classTName)
                 .addStatement("return asParser(%T(type))", listParserName)
+                .build())
+
+        funList.add(
+            FunSpec.builder("asList")
+                .addModifiers(KModifier.INLINE)
+                .addTypeVariable(anyT.copy(reified = true))
+                .addStatement("return asParser(object: %T<T>() {})", listParserName)
                 .build())
 
         funList.add(
