@@ -48,7 +48,7 @@ interface IJsonObject<P : Param<P>> {
     }
 
     companion object {
-        @JvmStatic
+        @JvmField
         val MEDIA_TYPE_JSON = MediaType.parse("application/json; charset=utf-8")
     }
 }
