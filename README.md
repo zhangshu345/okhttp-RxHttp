@@ -43,8 +43,6 @@ dependencies {
 
 ***RxHttp&RxLife 交流群：378530627***
 
-## 
-
 # 改动
 
 较主分支v1.4.3改动如下：
@@ -122,7 +120,7 @@ suspend <T> awaitList<T>()   //对应asList(Class<T>),直接返回List<T>对象
 suspend <K,V> awaitMap<K,V>() //对应asMap(Class<K>,Class<V>),直接返回Map<K,V>对象
 suspend <T> await(Parser<T>)  //对应asParser(Parser<T>)方法，直接返回T对象
 
-//以下三个方法用于对文件上传/下载进度的监听，后面会详细介绍 
+//以下三个方法用于对文件上传/下载进度的监听，后面会详细介绍
 suspend awaitDownload(String, CoroutineScope? = null,(Progress<String>) -> Unit)
 suspend awaitUpload<T>(CoroutineScope? = null，(Progress<T>) -> Unit)
 suspend awaitUpload<T>(Parser<T>, CoroutineScope? = null，(Progress<T>) -> Unit)
@@ -144,11 +142,11 @@ suspend awaitUpload<T>(Parser<T>, CoroutineScope? = null，(Progress<T>) -> Unit
 
 ```java
 class MainActivity : AppCompatActivity() {
-    
+
     //启动协程，发送请求
     fun sendRequest() {
         RxHttpScope(this)  //此this为LifecycleOwner接口对象，用于页面销毁时，自动关闭协程及请求
-            .launch({ 
+            .launch({
                 //当前运行在协程中，且在主线程运行
                 val student = getStudent()
                 //拿到相关信息后，便可直接更新UI，如：
@@ -158,7 +156,7 @@ class MainActivity : AppCompatActivity() {
                 it.show("发送失败,请稍后再试!")  //show方法是在Demo中扩展的方法
             })
     }
-    
+
     //注意这是挂断方法
     suspend fun getStudent(): Student {
         return RxHttp.get("/service/...")
@@ -166,7 +164,7 @@ class MainActivity : AppCompatActivity() {
             .addHeader("headKey", "headValue")
             .await() //由于方法指明了返回值为Student类型，故直接写await()，否则需要写 await<Student>()
     }
-    
+
 }
 ```
 
@@ -244,7 +242,7 @@ class MainActivity : AppCompatActivity() {
                 val banners = asyncBanner.await()           //这里返回List<Banner>对象
                 val students = asyncPersons.await()         //这里返回List<Student>对象
                 //开始更新UI
-                
+
             }, {
                 //出现异常，就会到这里，这里的it为Throwable类型
                 it.show("发送失败,请稍后再试!") //show方法是在Demo中扩展的方法
@@ -282,7 +280,7 @@ class MainActivity : AppCompatActivity() {
 
 ```java
 class MainActivity : AppCompatActivity() {
-    
+
     //启动协程，发送请求
     fun sendRequest() {
         RxHttpScope(this) //此this为LifecycleOwner接口对象，用于页面销毁时，自动关闭协程及请求
@@ -386,7 +384,7 @@ class MainActivity : AppCompatActivity() {
 
 ```java
 class MainActivity : AppCompatActivity() {
-   
+
     fun requestStudent() {
         postForm("/article/query/0/json")
             .add("k", null)
@@ -398,7 +396,7 @@ class MainActivity : AppCompatActivity() {
                 //失败回调
             })
     }
-    
+
     fun requestStudents() {
         postForm("/article/query/0/json")
             .add("k", null)
@@ -410,7 +408,7 @@ class MainActivity : AppCompatActivity() {
                 //失败回调
             })
     }
-    
+
     fun getStudents(view: View) {
         postForm("/article/query/0/json")
             .add("k", null)
@@ -426,3 +424,20 @@ class MainActivity : AppCompatActivity() {
 ```
 
 更多`asXxx<T>()`方法等你发现
+
+# Licenses
+```
+Copyright 2019 liujingxing
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
