@@ -18,4 +18,9 @@ open class SimpleParser<T : Any> : AbstractParser<T> {
     override fun onParse(response: Response): T {
         return convert(response, mType)
     }
+
+    companion object {
+        @JvmStatic
+        operator fun <T : Any> get(type: Class<T>) = SimpleParser(type);
+    }
 }
