@@ -518,51 +518,6 @@ class RxHttpGenerator {
                 .returns(rxHttpFormName)
                 .build())
 
-        methodList.add(
-            FunSpec.builder("asUpload")
-                .addModifiers(KModifier.INLINE)
-                .addTypeVariable(anyT.copy(reified = true))
-                .addParameter("progress", consumerProgressTName)
-                .addStatement("return asUpload(object: %T<T>() {}, progress, null)", simpleParserName)
-                .build())
-
-        methodList.add(
-            FunSpec.builder("asUpload")
-                .addModifiers(KModifier.INLINE)
-                .addTypeVariable(anyT.copy(reified = true))
-                .addParameter("progress", consumerProgressTName)
-                .addParameter("observeOnScheduler", schedulerName)
-                .addStatement("return asUpload(object: %T<T>() {}, progress, observeOnScheduler)", simpleParserName)
-                .build())
-
-        val parser = ParameterSpec.builder("parser", parserTName)
-            .build()
-
-        val observeOnScheduler = ParameterSpec.builder("observeOnScheduler", schedulerName.copy(nullable = true))
-            .defaultValue("null")
-            .build()
-
-        methodList.add(
-            FunSpec.builder("asUpload")
-                .addAnnotation(JvmOverloads::class)
-                .addTypeVariable(anyT)
-                .addParameter(parser)
-                .addParameter("progress", consumerProgressTName)
-                .addParameter(observeOnScheduler)
-                .addCode("""
-                    setConverter(param)                                                    
-                    var observable = %T                                            
-                        .uploadProgress(addDefaultDomainIfAbsent(param), parser, scheduler)
-                    if (observeOnScheduler != null) {                                      
-                        observable = observable.observeOn(observeOnScheduler)              
-                    }                                                                      
-                    return observable.doOnNext(progress)                           
-                        .filter { it.isFinish }                                         
-                        .map { it.result }                                                 
-                """.trimIndent(), httpSenderName)
-                .returns(observableTName)
-                .build())
-
         val coroutineScopeName = ClassName("kotlinx.coroutines", "CoroutineScope").copy(nullable = true)
         val coroutine = ParameterSpec.builder("coroutine", coroutineScopeName)
             .defaultValue("null")
@@ -572,6 +527,13 @@ class RxHttpGenerator {
         val launchName = ClassName("kotlinx.coroutines", "launch")
         val progressTLambdaName = LambdaTypeName.get(parameters = *arrayOf(progressTName),
             returnType = Unit::class.asClassName())
+
+        val parser = ParameterSpec.builder("parser", parserTName)
+            .build()
+
+        val observeOnScheduler = ParameterSpec.builder("observeOnScheduler", schedulerName.copy(nullable = true))
+            .defaultValue("null")
+            .build()
 
         methodList.add(
             FunSpec.builder("awaitUpload")
@@ -600,6 +562,64 @@ class RxHttpGenerator {
                 .returns(t)
                 .build())
 
+        methodList.add(
+            FunSpec.builder("asUpload")
+                .addModifiers(KModifier.INLINE)
+                .addTypeVariable(anyT.copy(reified = true))
+                .addParameter(observeOnScheduler)
+                .addParameter("progress", progressTLambdaName, KModifier.NOINLINE)
+                .addStatement("return asUpload(object: %T<T>() {}, Consumer{ progress(it) }, observeOnScheduler)", simpleParserName)
+                .build())
+
+        methodList.add(
+            FunSpec.builder("asUpload")
+                .addTypeVariable(anyT)
+                .addParameter(parser)
+                .addParameter(observeOnScheduler)
+                .addParameter("progress", progressTLambdaName)
+                .addStatement("return asUpload(parser, Consumer{ progress(it) }, observeOnScheduler)")
+                .returns(observableTName)
+                .build())
+
+        methodList.add(
+            FunSpec.builder("asUpload")
+                .addAnnotation(JvmOverloads::class)
+                .addParameter("progress", consumerProgressStringName)
+                .addParameter(observeOnScheduler)
+                .addStatement("return asUpload(String::class.java, progress, observeOnScheduler)", simpleParserName)
+                .build())
+
+        methodList.add(
+            FunSpec.builder("asUpload")
+                .addAnnotation(JvmOverloads::class)
+                .addTypeVariable(anyT)
+                .addParameter("type", Class::class.asClassName().parameterizedBy(TypeVariableName("T")))
+                .addParameter("progress", consumerProgressTName)
+                .addParameter(observeOnScheduler)
+                .addStatement("return asUpload(%T(type), progress, observeOnScheduler)", simpleParserName)
+                .build())
+
+        methodList.add(
+            FunSpec.builder("asUpload")
+                .addKdoc("所有的 asUpload 系列方法，最终都会调用本方法")
+                .addAnnotation(JvmOverloads::class)
+                .addTypeVariable(anyT)
+                .addParameter(parser)
+                .addParameter("progress", consumerProgressTName)
+                .addParameter(observeOnScheduler)
+                .addCode("""
+                    setConverter(param)                                                    
+                    var observable = %T                                            
+                        .uploadProgress(addDefaultDomainIfAbsent(param), parser, scheduler)
+                    if (observeOnScheduler != null) {                                      
+                        observable = observable.observeOn(observeOnScheduler)              
+                    }                                                                      
+                    return observable.doOnNext(progress)                           
+                        .filter { it.isFinish }                                         
+                        .map { it.result }                                                 
+                """.trimIndent(), httpSenderName)
+                .returns(observableTName)
+                .build())
 
         val rxHttpFormSpec = TypeSpec.classBuilder("RxHttpFormParam")
             .addKdoc("Github" +

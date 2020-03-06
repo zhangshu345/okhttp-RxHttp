@@ -87,7 +87,15 @@ suspend fun IRxHttp.awaitOkResponse() = await(OkResponseParser())
  */
 suspend fun <T : Any> IRxHttp.await(parser: Parser<T>) = newCall().await(parser)
 
-@JvmOverloads
+suspend fun IRxHttp.awaitDownload(destPath: String): String {
+    return await(DownloadParser(destPath))
+}
+
+/**
+ * @param destPath 本地存储路径
+ * @param coroutine 用于开启一个协程，来控制进度回调所在的线程
+ * @param progress 进度回调
+ */
 suspend fun IRxHttp.awaitDownload(
     destPath: String,
     coroutine: CoroutineScope? = null,
