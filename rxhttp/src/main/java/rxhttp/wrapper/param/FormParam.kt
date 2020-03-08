@@ -7,7 +7,6 @@ import rxhttp.wrapper.entity.UpFile
 import rxhttp.wrapper.progress.ProgressRequestBody
 import rxhttp.wrapper.utils.BuildUtil
 import rxhttp.wrapper.utils.CacheUtil
-import java.io.IOException
 import java.util.*
 
 /**

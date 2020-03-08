@@ -13,6 +13,7 @@ import okhttp3.MediaType
  */
 interface IJsonObject<P : Param<P>> {
     fun add(key: String, value: Any?): P
+
     /**
      * 将Json对象里面的key-value逐一取出，添加到另一个Json对象中，
      * 输入非Json对象将抛出[IllegalStateException]异常

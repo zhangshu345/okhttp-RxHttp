@@ -66,6 +66,7 @@ interface IFile<P : Param<P>> {
     fun removeFile(key: String): P
 
     fun setUploadMaxLength(maxLength: Long): P
+
     /**
      *
      * 设置上传进度监听器

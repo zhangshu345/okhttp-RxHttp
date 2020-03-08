@@ -17,9 +17,8 @@ import java.io.IOException
 @Suppress("UNCHECKED_CAST")
 abstract class AbstractParam<P : Param<P>>(
     private var mUrl: String,    //链接地址
-    private val mMethod: Method) //请求方法
-    : Param<P> {
-
+    private val mMethod: Method  //请求方法
+) : Param<P> {
 
     private var mHBuilder: Headers.Builder? = null//请求头构造器
     private val requestBuilder = Request.Builder() //请求构造器

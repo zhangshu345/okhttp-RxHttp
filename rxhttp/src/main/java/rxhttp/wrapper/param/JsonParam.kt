@@ -4,8 +4,6 @@ import okhttp3.HttpUrl
 import okhttp3.RequestBody
 import rxhttp.wrapper.utils.CacheUtil
 import rxhttp.wrapper.utils.GsonUtil
-import java.util.*
-import kotlin.collections.LinkedHashMap
 
 /**
  * post、put、patch、delete请求，参数以{application/json; charset=utf-8}形式提交
